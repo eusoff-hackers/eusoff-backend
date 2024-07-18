@@ -2,6 +2,9 @@ name: CI PR
 on:
   pull_request:
   workflow_dispatch:
+  push:
+    branches:
+      - master
 concurrency:
   group: ${{ github.head_ref }}
   cancel-in-progress: true
