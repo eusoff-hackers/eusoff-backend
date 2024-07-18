@@ -46,6 +46,7 @@
     "mongodb-snapshot": "^1.4.1",
     "mongoose": "^7.6.6",
     "nodemailer": "^6.9.6",
+    "typescript": "^5.5.3",
     "winston": "^3.10.0",
     "winston-mongodb": "^5.1.1",
     "xkpasswd": "^1.0.5"
@@ -63,8 +64,7 @@
     "lint-staged": "^14.0.1",
     "nodemon": "^3.0.1",
     "prettier": "3.0.3",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.2.2"
+    "ts-node": "^10.9.2"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
