@@ -10,7 +10,8 @@
     "build": "npx tsc",
     "prod": "env-cmd -f ./.env node build/App.js",
     "prepare": "cd .. && husky install backend/.husky",
-    "script": "env-cmd -f ./.env.dev node "
+    "script": "env-cmd -f ./.env.dev node",
+    "lint": "eslint v2"
   },
   "author": "Eusoff Hackers",
   "license": "ISC",
