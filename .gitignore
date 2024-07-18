@@ -1,0 +1,10 @@
+node_modules/
+.env*
+package-lock.json
+*.log
+!.env.example
+.tsbuildinfo
+build/
+sso/FederationMetadata.xml*
+v2/scripts/csv/*
+backups/
