@@ -9,6 +9,7 @@ const LOG_LEVEL: `production` | `warn` | `info` =
   env.NODE_ENV === 'production' ? 'warn' : 'info';
 
 const { format, transports } = winston;
+ddd;
 
 const logFormat = format.printf(
   ({ level, message, timestamp }) => `${timestamp} ${level}: ${message}`,
