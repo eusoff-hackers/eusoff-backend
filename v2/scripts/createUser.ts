@@ -1,14 +1,15 @@
-const mongoose = require(`mongoose`);
+import { User } from "@/v2/models/user";
+import { hash } from "bcryptjs";
+import mongoose from "mongoose";
+
 const { env } = process;
-const { User } = require(`../models/user`);
-const bcrypt = require(`bcryptjs`);
 
 async function run() {
   await mongoose.connect(env.MONGO_URI);
 
   await User.create({
     username: "C111",
-    password: await bcrypt.hash(`mediumcoock`, 10),
+    password: await hash(`mediumcoock`, 10),
     year: 1,
     role: `ADMIN`,
     gender: `Female`,

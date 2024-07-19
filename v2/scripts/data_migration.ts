@@ -23,15 +23,6 @@ interface oldUser extends iUser {
   teams: Types.ObjectId[];
 }
 
-interface Suggestion {
-  Nickname: string;
-  DisplayName: string;
-}
-
-interface Body {
-  Body: { ResultSet: Suggestion[] };
-}
-
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
   const csvFilePath = "./v2/scripts/csv/formatted_data.csv";

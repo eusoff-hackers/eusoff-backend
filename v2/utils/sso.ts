@@ -3,7 +3,6 @@ import type { IOAuthController } from "@boxyhq/saml-jackson";
 import { controllers } from "@boxyhq/saml-jackson";
 import * as fs from "fs";
 
-/* eslint-disable import/no-mutable-exports */
 let apiController;
 let oauthController: IOAuthController;
 
