@@ -1,12 +1,13 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { FromSchema } from 'json-schema-to-ts';
-import { isEligible } from '../../utils/jersey';
-import { reportError, logEvent } from '../../utils/logger';
-import { sendError, sendStatus } from '../../utils/req_handler';
-import { auth } from '../../utils/auth';
-import { Jersey, iJersey } from '../../models/jersey';
-import { Bid } from '../../models/bid';
+import { Bid } from "@/v2/models/bid";
+import type { iJersey } from "@/v2/models/jersey";
+import { Jersey } from "@/v2/models/jersey";
+import { auth } from "@/v2/utils/auth";
+import { isEligible } from "@/v2/utils/jersey";
+import { logEvent, reportError } from "@/v2/utils/logger";
+import { sendError, sendStatus } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
+import type { FromSchema } from "json-schema-to-ts";
 
 const schema = {
   body: {
@@ -29,10 +30,7 @@ const schema = {
 type iBids = FromSchema<typeof schema.body>;
 type iBody = Omit<iBids, keyof { bids: iJersey[] }> & { bids: iJersey[] };
 
-async function handler(
-  req: FastifyRequest<{ Body: iBody }>,
-  res: FastifyReply,
-) {
+async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
     const user = req.session.get(`user`)!;
@@ -52,12 +50,7 @@ async function handler(
     await Bid.deleteMany({ user: user._id }).session(session.session);
     await Bid.create(newBids, { session: session.session });
 
-    await logEvent(
-      `USER PLACE BIDS`,
-      session,
-      JSON.stringify(newBids),
-      user._id,
-    );
+    await logEvent(`USER PLACE BIDS`, session, JSON.stringify(newBids), user._id);
 
     try {
       await session.commit();
@@ -76,12 +69,7 @@ async function handler(
   }
 }
 
-const create: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  { Body: iBody }
-> = {
+const create: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
   url: `/create`,
   schema,

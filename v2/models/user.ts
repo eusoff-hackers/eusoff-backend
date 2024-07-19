@@ -1,6 +1,6 @@
-import { Document, Schema, model } from 'mongoose';
-
-import './member';
+import "./member";
+import type { Document } from "mongoose";
+import { Schema, model } from "mongoose";
 
 interface iUser extends Document {
   username: string;

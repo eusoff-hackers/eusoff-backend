@@ -1,12 +1,13 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { FromSchema } from 'json-schema-to-ts';
-import { reportError, logEvent, logAndThrow } from '../../../utils/logger';
-import { sendError, sendStatus } from '../../../utils/req_handler';
-import { Hall } from '../../../models/hall';
-import { IhgSport } from '../../../models/ihgSport';
-import { iIhgPlacement, IhgPlacement } from '../../../models/ihgPlacement';
-import { admin } from '../../../utils/auth';
+import { Hall } from "@/v2/models/hall";
+import type { iIhgPlacement } from "@/v2/models/ihgPlacement";
+import { IhgPlacement } from "@/v2/models/ihgPlacement";
+import { IhgSport } from "@/v2/models/ihgSport";
+import { admin } from "@/v2/utils/auth";
+import { logAndThrow, logEvent, reportError } from "@/v2/utils/logger";
+import { sendError, sendStatus } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
+import type { FromSchema } from "json-schema-to-ts";
 
 const schema = {
   body: {
@@ -21,10 +22,7 @@ const schema = {
 type iPlacements = FromSchema<typeof schema.body>;
 type iBody = Omit<iPlacements, keyof iIhgPlacement[]> & iIhgPlacement[];
 
-async function handler(
-  req: FastifyRequest<{ Body: iBody }>,
-  res: FastifyReply,
-) {
+async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
     const placements = req.body;
@@ -34,12 +32,8 @@ async function handler(
         placements.map(async (p) => {
           if (
             !(
-              (await Hall.exists({ _id: p.hall._id }).session(
-                session.session,
-              )) &&
-              (await IhgSport.exists({ _id: p.sport._id }).session(
-                session.session,
-              ))
+              (await Hall.exists({ _id: p.hall._id }).session(session.session)) &&
+              (await IhgSport.exists({ _id: p.sport._id }).session(session.session))
             )
           ) {
             return false;
@@ -64,12 +58,7 @@ async function handler(
     await IhgPlacement.deleteMany({}).session(session.session);
     await IhgPlacement.create(converted, { session: session.session });
 
-    await logEvent(
-      `ADMIN EDIT IHG PLACEMENTS`,
-      session,
-      JSON.stringify(converted),
-      req.session.get(`user`)!._id,
-    );
+    await logEvent(`ADMIN EDIT IHG PLACEMENTS`, session, JSON.stringify(converted), req.session.get(`user`)!._id);
 
     try {
       await session.commit();
@@ -88,12 +77,7 @@ async function handler(
   }
 }
 
-const placements: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  { Body: iBody }
-> = {
+const placements: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
   url: `/placements`,
   schema,

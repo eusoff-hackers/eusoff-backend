@@ -1,13 +1,15 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server as HttpServer, ServerResponse } from 'http';
-import { FromSchema } from 'json-schema-to-ts';
-import { sendError, sendStatus } from '../../utils/req_handler';
-import { reportError, logEvent } from '../../utils/logger';
-import { auth } from '../../utils/auth';
-import { Cca, iCca } from '../../models/cca';
-import { CcaInfo, iCcaInfo } from '../../models/ccaInfo';
-import { CcaSignup } from '../../models/ccaSignup';
-import { Server } from '../../models/server';
+import type { iCca } from "@/v2/models/cca";
+import { Cca } from "@/v2/models/cca";
+import type { iCcaInfo } from "@/v2/models/ccaInfo";
+import { CcaInfo } from "@/v2/models/ccaInfo";
+import { CcaSignup } from "@/v2/models/ccaSignup";
+import { Server } from "@/v2/models/server";
+import { auth } from "@/v2/utils/auth";
+import { logEvent, reportError } from "@/v2/utils/logger";
+import { sendError, sendStatus } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { Server as HttpServer, IncomingMessage, ServerResponse } from "http";
+import type { FromSchema } from "json-schema-to-ts";
 
 const schema = {
   body: {
@@ -34,15 +36,10 @@ type iBody = Omit<iSchema, keyof { info: iCcaInfo; ccas: iCca[] }> & {
   ccas: iCca[];
 };
 
-async function handler(
-  req: FastifyRequest<{ Body: iBody }>,
-  res: FastifyReply,
-) {
+async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
-    const isOpen = (
-      await Server.findOne({ key: `ccaOpen` }).session(session.session)
-    )?.value;
+    const isOpen = (await Server.findOne({ key: `ccaOpen` }).session(session.session))?.value;
 
     if (!isOpen) {
       return await sendStatus(res, 403, `CCA registration not open.`);
@@ -69,12 +66,7 @@ async function handler(
     await CcaSignup.create(newCcas, { session: session.session });
     await CcaInfo.create([info], { session: session.session });
 
-    await logEvent(
-      `USER SIGNUP CCA`,
-      session,
-      JSON.stringify({ ccas: newCcas, info }),
-      user._id,
-    );
+    await logEvent(`USER SIGNUP CCA`, session, JSON.stringify({ ccas: newCcas, info }), user._id);
 
     try {
       await session.commit();
@@ -93,12 +85,7 @@ async function handler(
   }
 }
 
-const signup: RouteOptions<
-  HttpServer,
-  IncomingMessage,
-  ServerResponse,
-  { Body: iBody }
-> = {
+const signup: RouteOptions<HttpServer, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
   url: `/signup`,
   schema,

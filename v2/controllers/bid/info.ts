@@ -1,10 +1,10 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { BiddingInfo } from '../../models/biddingInfo';
-import { Bid } from '../../models/bid';
-import { success, resBuilder, sendError } from '../../utils/req_handler';
-import { logAndThrow, reportError } from '../../utils/logger';
-import { auth } from '../../utils/auth';
+import { Bid } from "@/v2/models/bid";
+import { BiddingInfo } from "@/v2/models/biddingInfo";
+import { auth } from "@/v2/utils/auth";
+import { logAndThrow, reportError } from "@/v2/utils/logger";
+import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
 
 const schema = {
   response: {
@@ -32,9 +32,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
     const user = req.session.get(`user`)!;
 
     const p = await Promise.allSettled([
-      BiddingInfo.findOne({ user: user._id })
-        .populate(`jersey`)
-        .session(session.session),
+      BiddingInfo.findOne({ user: user._id }).populate(`jersey`).session(session.session),
       Bid.find({ user: user._id }).populate(`jersey`).session(session.session),
     ]);
     const info = logAndThrow([p[0]], `Bid info retrieval error`)[0];
@@ -51,12 +49,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   }
 }
 
-const info: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  Record<string, never>
-> = {
+const info: RouteOptions<Server, IncomingMessage, ServerResponse, Record<string, never>> = {
   method: `GET`,
   url: `/info`,
   schema,

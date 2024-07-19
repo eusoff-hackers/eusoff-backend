@@ -1,10 +1,11 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { iUser, User } from '../models/user';
-import { sendStatus } from './req_handler';
-import { reportError, logger } from './logger';
-import { MongoSession } from './mongoSession';
+import { logger, reportError } from "./logger";
+import type { MongoSession } from "./mongoSession";
+import { sendStatus } from "./req_handler";
+import type { iUser } from "@/v2/models/user";
+import { User } from "@/v2/models/user";
+import type { FastifyReply, FastifyRequest } from "fastify";
 
-declare module 'fastify' {
+declare module "fastify" {
   interface Session {
     user: iUser;
     session: MongoSession;
@@ -22,9 +23,7 @@ async function auth(req: FastifyRequest, res: FastifyReply) {
       user: iUser;
     };
 
-    const user = (await User.findById(userSession._id).session(
-      session.session,
-    ))!;
+    const user = (await User.findById(userSession._id).session(session.session))!;
 
     req.session.set(`user`, user);
     await req.session.save();

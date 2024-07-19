@@ -1,6 +1,6 @@
-import { FastifyInstance } from 'fastify';
-import { info } from '../controllers/bid/info';
-import { create } from '../controllers/bid/create';
+import { create } from "@/v2/controllers/bid/create";
+import { info } from "@/v2/controllers/bid/info";
+import type { FastifyInstance } from "fastify";
 
 export default async (fastify: FastifyInstance) => {
   fastify.route(info);

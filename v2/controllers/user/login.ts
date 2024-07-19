@@ -1,16 +1,11 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { FromSchema } from 'json-schema-to-ts';
-import * as bcrypt from 'bcryptjs';
-import {
-  resBuilder,
-  success,
-  sendStatus,
-  sendError,
-} from '../../utils/req_handler';
-import { User } from '../../models/user';
-import { reportError, logEvent } from '../../utils/logger';
-import * as auth from '../../utils/auth';
+import { User } from "@/v2/models/user";
+import * as auth from "@/v2/utils/auth";
+import { logEvent, reportError } from "@/v2/utils/logger";
+import { resBuilder, sendError, sendStatus, success } from "@/v2/utils/req_handler";
+import * as bcrypt from "bcryptjs";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
+import type { FromSchema } from "json-schema-to-ts";
 
 const schema = {
   body: {
@@ -42,10 +37,7 @@ const schema = {
 
 type iBody = FromSchema<typeof schema.body>;
 
-async function handler(
-  req: FastifyRequest<{ Body: iBody }>,
-  res: FastifyReply,
-) {
+async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
     const {
@@ -80,12 +72,7 @@ async function handler(
   }
 }
 
-const login: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  { Body: iBody }
-> = {
+const login: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
   url: `/login`,
   schema,

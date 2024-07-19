@@ -1,12 +1,9 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { logger, reportError } from './logger';
+import { logger, reportError } from "./logger";
+import type { FastifyReply, FastifyRequest } from "fastify";
 
 const { env } = process;
 
-async function checkCache<T>(
-  req: FastifyRequest,
-  res: FastifyReply,
-): Promise<void> {
+async function checkCache<T>(req: FastifyRequest, res: FastifyReply): Promise<void> {
   try {
     if (!req.fastify) return;
     const cache = (await req.fastify.cache.get(req.url)) as unknown as {
@@ -23,11 +20,7 @@ async function checkCache<T>(
   }
 }
 
-async function setCache(
-  req: FastifyRequest,
-  res: FastifyReply,
-  payload: unknown,
-) {
+async function setCache(req: FastifyRequest, res: FastifyReply, payload: unknown) {
   if (!(typeof payload === `string`)) return payload;
   if (res.fromCache) return payload;
   if (!req.fastify) return payload;

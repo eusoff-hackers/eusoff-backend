@@ -1,10 +1,12 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server as httpServer, ServerResponse } from 'http';
-import { iRoomBidInfo, RoomBidInfo } from '../../models/roomBidInfo';
-import { iServer, Server } from '../../models/server';
-import { success, resBuilder, sendError } from '../../utils/req_handler';
-import { logAndThrow, reportError } from '../../utils/logger';
-import { auth } from '../../utils/auth';
+import type { iRoomBidInfo } from "@/v2/models/roomBidInfo";
+import { RoomBidInfo } from "@/v2/models/roomBidInfo";
+import type { iServer } from "@/v2/models/server";
+import { Server } from "@/v2/models/server";
+import { auth } from "@/v2/utils/auth";
+import { logAndThrow, reportError } from "@/v2/utils/logger";
+import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, ServerResponse, Server as httpServer } from "http";
 
 const schema = {
   response: {
@@ -33,11 +35,9 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   try {
     const user = req.session.get(`user`)!;
 
-    const [info, bidOpen, bidClose]: [
-      iRoomBidInfo | null,
-      iServer | null,
-      iServer | null,
-    ] = logAndThrow<iServer | iRoomBidInfo | null>(
+    const [info, bidOpen, bidClose]: [iRoomBidInfo | null, iServer | null, iServer | null] = logAndThrow<
+      iServer | iRoomBidInfo | null
+    >(
       await Promise.allSettled([
         RoomBidInfo.findOne({ user: user._id }).session(session.session).lean(),
         Server.findOne({ key: `roomBidOpen` }).session(session.session),
@@ -53,10 +53,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
     if (info) {
       info.user = undefined;
       const curDate = Date.now();
-      info.canBid =
-        info.isEligible &&
-        (bidOpen.value as number) <= curDate &&
-        curDate <= (bidClose.value as number);
+      info.canBid = info.isEligible && (bidOpen.value as number) <= curDate && curDate <= (bidClose.value as number);
     }
 
     return await success(res, {
@@ -74,12 +71,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   }
 }
 
-const info: RouteOptions<
-  httpServer,
-  IncomingMessage,
-  ServerResponse,
-  Record<string, never>
-> = {
+const info: RouteOptions<httpServer, IncomingMessage, ServerResponse, Record<string, never>> = {
   method: `GET`,
   url: `/info`,
   schema,

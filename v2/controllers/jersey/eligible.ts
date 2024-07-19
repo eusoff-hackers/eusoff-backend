@@ -1,9 +1,9 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { getEligible } from '../../utils/jersey';
-import { success, sendError, resBuilder } from '../../utils/req_handler';
-import { reportError } from '../../utils/logger';
-import { auth } from '../../utils/auth';
+import { auth } from "@/v2/utils/auth";
+import { getEligible } from "@/v2/utils/jersey";
+import { reportError } from "@/v2/utils/logger";
+import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
 
 const schema = {
   response: {
@@ -34,12 +34,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   }
 }
 
-const eligible: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  Record<string, never>
-> = {
+const eligible: RouteOptions<Server, IncomingMessage, ServerResponse, Record<string, never>> = {
   method: `GET`,
   url: `/eligible`,
   schema,

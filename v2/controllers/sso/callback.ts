@@ -1,16 +1,13 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { OIDCAuthzResponsePayload } from '@boxyhq/saml-jackson';
-import { sendStatus, sendError } from '../../utils/req_handler';
-import { oauthController } from '../../utils/sso';
-import { reportError, logEvent } from '../../utils/logger';
-import { User } from '../../models/user';
-import * as auth from '../../utils/auth';
+import { User } from "@/v2/models/user";
+import * as auth from "@/v2/utils/auth";
+import { logEvent, reportError } from "@/v2/utils/logger";
+import { sendError, sendStatus } from "@/v2/utils/req_handler";
+import { oauthController } from "@/v2/utils/sso";
+import type { OIDCAuthzResponsePayload } from "@boxyhq/saml-jackson";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
 
-async function handler(
-  req: FastifyRequest<{ Querystring: OIDCAuthzResponsePayload }>,
-  res: FastifyReply,
-) {
+async function handler(req: FastifyRequest<{ Querystring: OIDCAuthzResponsePayload }>, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
     const { code } = req.query;
@@ -36,9 +33,7 @@ async function handler(
     }).session(session.session))!;
 
     if (!user) {
-      return res.redirect(
-        `${process.env.FRONTEND_URL}/unauthorized?username=${profile.id}`,
-      );
+      return res.redirect(`${process.env.FRONTEND_URL}/unauthorized?username=${profile.id}`);
     }
 
     await auth.login(user, req);
@@ -53,12 +48,7 @@ async function handler(
   }
 }
 
-const callback: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  { Querystring: OIDCAuthzResponsePayload }
-> = {
+const callback: RouteOptions<Server, IncomingMessage, ServerResponse, { Querystring: OIDCAuthzResponsePayload }> = {
   method: `GET`,
   url: `/callback`,
   handler,

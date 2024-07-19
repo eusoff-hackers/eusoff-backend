@@ -1,56 +1,38 @@
-import winston from 'winston';
-import 'winston-mongodb';
-import { Types } from 'mongoose';
-import { EventLog } from '../models/eventLog';
-import { MongoSession } from './mongoSession';
+import type { MongoSession } from "./mongoSession";
+import { EventLog } from "@/v2/models/eventLog";
+import { Types } from "mongoose";
+import winston from "winston";
+import "winston-mongodb";
 
 const { env } = process;
-const LOG_LEVEL: `production` | `warn` | `info` =
-  env.NODE_ENV === 'production' ? 'warn' : 'info';
+const LOG_LEVEL: `production` | `warn` | `info` = env.NODE_ENV === "production" ? "warn" : "info";
 
 const { format, transports } = winston;
 
-const logFormat = format.printf(
-  ({ level, message, timestamp }) => `${timestamp} ${level}: ${message}`,
-);
+const logFormat = format.printf(({ level, message, timestamp }) => `${timestamp} ${level}: ${message}`);
 
 const logger = winston.createLogger({
   format: format.combine(format.metadata()),
   transports: [
     new transports.Console({
       level: LOG_LEVEL,
-      format: format.combine(
-        format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-        format.cli(),
-        logFormat,
-      ),
+      format: format.combine(format.timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }), format.cli(), logFormat),
     }),
     new transports.File({
-      filename: 'combined.log',
+      filename: "combined.log",
       format: format.combine(format.timestamp(), format.json()),
     }),
     new transports.MongoDB({ level: LOG_LEVEL, db: env.MONGO_URI }),
   ],
 });
 
-function logAndThrow<Type>(
-  jobs: PromiseSettledResult<Type>[],
-  message: string,
-): Type[] {
-  const errors = (
-    jobs.filter((j) => j.status !== 'fulfilled') as PromiseRejectedResult[]
-  ).map((j) => j.reason);
-  errors.forEach((error) =>
-    logger.error(`${message} ${error.message}`, { error }),
-  );
+function logAndThrow<Type>(jobs: PromiseSettledResult<Type>[], message: string): Type[] {
+  const errors = (jobs.filter((j) => j.status !== "fulfilled") as PromiseRejectedResult[]).map((j) => j.reason);
+  errors.forEach((error) => logger.error(`${message} ${error.message}`, { error }));
   if (errors.length) {
     throw new Error(message);
   }
-  return (
-    jobs.filter(
-      (j) => j.status === 'fulfilled',
-    ) as PromiseFulfilledResult<Type>[]
-  ).map((j) => j.value);
+  return (jobs.filter((j) => j.status === "fulfilled") as PromiseFulfilledResult<Type>[]).map((j) => j.value);
 }
 
 function reportError(error: unknown, template: string) {
@@ -63,22 +45,9 @@ function reportError(error: unknown, template: string) {
   }
 }
 
-async function logEvent(
-  action: string,
-  session: MongoSession,
-  data: string,
-): Promise<void>;
-async function logEvent(
-  action: string,
-  session: MongoSession,
-  data: string,
-  user: Types.ObjectId,
-): Promise<void>;
-async function logEvent(
-  action: string,
-  session: MongoSession,
-  user: Types.ObjectId,
-): Promise<void>;
+async function logEvent(action: string, session: MongoSession, data: string): Promise<void>;
+async function logEvent(action: string, session: MongoSession, data: string, user: Types.ObjectId): Promise<void>;
+async function logEvent(action: string, session: MongoSession, user: Types.ObjectId): Promise<void>;
 async function logEvent(
   action: string,
   session: MongoSession,

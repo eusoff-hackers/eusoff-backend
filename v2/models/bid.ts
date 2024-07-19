@@ -1,6 +1,7 @@
-import { Document, Types, Schema, model } from 'mongoose';
-import './user';
-import './jersey';
+import "./jersey";
+import "./user";
+import type { Document, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 
 interface iBid extends Document {
   user: Types.ObjectId;

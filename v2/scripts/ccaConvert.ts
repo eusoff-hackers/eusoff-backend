@@ -1,7 +1,7 @@
-import * as fs from 'fs';
-import { parse } from 'csv-parse';
-import mongoose, { Types, Document } from 'mongoose';
-import { Cca, iCca } from '../models/cca';
+import { Cca } from "@/v2/models/cca";
+import { parse } from "csv-parse";
+import * as fs from "fs";
+import mongoose from "mongoose";
 
 interface Data {
   name: string;
@@ -27,13 +27,13 @@ function convert(s: string): string[] {
 
 async function run() {
   await mongoose.connect(process.env.MONGO_URI);
-  const csvFilePath = './v2/scripts/csv/ccaData.csv';
-  const fileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
+  const csvFilePath = "./v2/scripts/csv/ccaData.csv";
+  const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
     fileContent,
     {
-      delimiter: ',',
+      delimiter: ",",
       columns: true,
     },
     async (error, result: Data[]) => {

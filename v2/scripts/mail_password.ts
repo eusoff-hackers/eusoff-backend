@@ -1,13 +1,12 @@
 /* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-await-in-loop */
 
-import { parse } from 'csv-parse';
-import * as fs from 'fs';
-import readline from 'readline';
-import nodemailer from 'nodemailer';
+/* eslint-disable no-restricted-syntax */
+
+/* eslint-disable no-await-in-loop */
+import { parse } from "csv-parse";
+import * as fs from "fs";
+import nodemailer from "nodemailer";
+import readline from "readline";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -24,7 +23,7 @@ const transport = nodemailer.createTransport({
   // host: 'smtpout.secureserver.net',
   // port: 465,
   // secure: true,
-  service: 'Outlook365',
+  service: "Outlook365",
   auth: {
     user: process.env.EMAIL,
     pass: process.env.EMAIL_PASSWORD,
@@ -79,7 +78,7 @@ async function mail(user: Data) {
     await transport.sendMail({
       from: process.env.EMAIL, // sender address
       to: email, // list of receivers
-      subject: 'Credentials for Room Bidding.', // Subject line
+      subject: "Credentials for Room Bidding.", // Subject line
       // text: mail.password, // plain text body
       html: template, // html body
     });
@@ -90,22 +89,19 @@ async function mail(user: Data) {
 }
 
 (async () => {
-  const csvFilePath = './v2/scripts/csv/passworded.csv';
-  const fileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
+  const csvFilePath = "./v2/scripts/csv/passworded.csv";
+  const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
     fileContent,
     {
-      delimiter: ',',
+      delimiter: ",",
       columns: true,
     },
     async (error, result: Data[]) => {
-      mail(result.filter((u) => u.username === 'A0276140L')[0]);
+      mail(result.filter((u) => u.username === "A0276140L")[0]);
       const answer = await new Promise((resolve) => {
-        rl.question(
-          `Found ${result.length} documents containing user and password. Send? (y/n) `,
-          resolve,
-        );
+        rl.question(`Found ${result.length} documents containing user and password. Send? (y/n) `, resolve);
       });
 
       if (answer !== `y`) return;

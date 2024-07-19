@@ -1,6 +1,6 @@
-import mongoose from 'mongoose';
-import { BiddingInfo } from '../models/biddingInfo';
-import { User } from '../models/user';
+import { BiddingInfo } from "@/v2/models/biddingInfo";
+import { User } from "@/v2/models/user";
+import mongoose from "mongoose";
 
 const { env } = process;
 
