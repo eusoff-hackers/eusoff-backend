@@ -1,4 +1,4 @@
-import { logger, reportError } from "./logger";
+import { logger, reportError } from "@/v2/utils/logger";
 import type { IOAuthController } from "@boxyhq/saml-jackson";
 import { controllers } from "@boxyhq/saml-jackson";
 import * as fs from "fs";

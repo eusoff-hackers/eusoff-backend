@@ -5,8 +5,8 @@
 /* eslint-disable no-await-in-loop */
 
 /* eslint-disable no-continue */
-import type { iRoomBidInfo } from "@/v2/models/roomBidInfo";
 import { RoomBidInfo } from "@/v2/models/roomBidInfo";
+import type { iRoomBidInfo } from "@/v2/models/roomBidInfo";
 import { User } from "@/v2/models/user";
 import { parse } from "csv-parse";
 import * as fs from "fs";
@@ -207,7 +207,7 @@ interface Data {
           const tmp = await User.findOne({ username: user.username }).session(session);
           if (!tmp || tmp.role !== "USER") missing.push(user);
           else {
-            if ((await RoomBidInfo.countDocuments({ user: tmp._id })) !== 0) continue;
+            if ((await RoomBidInfo.countDocuments({ user: tmp._id }).session(session)) !== 0) continue;
             res.push({
               user: tmp._id,
               isEligible: false,

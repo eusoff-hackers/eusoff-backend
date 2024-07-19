@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Hall } from "@/v2/models/hall";
 import { IhgPoint } from "@/v2/models/ihgPoint";
 import mongoose from "mongoose";

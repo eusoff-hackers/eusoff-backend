@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { IhgMatch } from "@/v2/models/ihgMatch";
 import mongoose from "mongoose";
 

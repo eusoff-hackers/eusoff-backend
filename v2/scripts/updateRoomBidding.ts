@@ -3,33 +3,23 @@
 /* eslint-disable no-restricted-syntax */
 
 /* eslint-disable no-await-in-loop */
+
+/* eslint-disable no-continue */
+import { RoomBidInfo } from "@/v2/models/roomBidInfo";
 import { User } from "@/v2/models/user";
-import type { iUser } from "@/v2/models/user";
-import bcrypt from "bcrypt";
 import { parse } from "csv-parse";
 import * as fs from "fs";
 import mongoose from "mongoose";
 
-const SALT_ROUNDS = 10;
-
 interface Data {
-  username: string;
-  role: string;
-  gender: string;
-  year: number;
-  room: string;
-  email: string;
-  password: string;
-}
-
-async function hashPassword(password: string) {
-  const hashedPw = await bcrypt.hash(password, SALT_ROUNDS);
-  return hashedPw;
+  "Full Name": string;
+  "Matric Number": string;
+  "Room Bidding Points": number;
 }
 
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
-  const csvFilePath = "./v2/scripts/csv/passworded.csv";
+  const csvFilePath = "./v2/scripts/csv/room_bidding_list.csv";
   const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
@@ -48,13 +38,30 @@ async function hashPassword(password: string) {
         readConcern: { level: `snapshot` },
         writeConcern: { w: `majority`, j: true },
       });
-      const res: iUser[] = [];
-      for (const user of result) {
-        user.password = await hashPassword(user.password);
-        res.push(user as iUser);
-      }
       try {
-        await User.create(res, { session });
+        const missing: Data[] = [];
+
+        for (const user of result) {
+          const tmp = await User.findOne({
+            username: user["Matric Number"],
+          }).session(session);
+          if (!tmp) missing.push(user);
+          else {
+            if ((await RoomBidInfo.countDocuments({ user: tmp._id }).session(session)) === 0) {
+              missing.push(user);
+              continue;
+            }
+            await RoomBidInfo.findOneAndUpdate(
+              { user: tmp._id },
+              { isEligible: true, points: user["Room Bidding Points"] },
+            ).session(session);
+          }
+        }
+
+        console.log(
+          "Missing users: ",
+          missing.map((u) => u["Matric Number"]),
+        );
 
         try {
           await session.commitTransaction();

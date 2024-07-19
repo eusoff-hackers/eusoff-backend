@@ -1,6 +1,7 @@
 import { logger, reportError } from "./logger";
 import type { MongoSession } from "./mongoSession";
 import { sendStatus } from "./req_handler";
+import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
 import { User } from "@/v2/models/user";
 import type { FastifyReply, FastifyRequest } from "fastify";
@@ -15,7 +16,8 @@ declare module "fastify" {
 async function auth(req: FastifyRequest, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
-    if (!req.session?.user) {
+    const allow = await Server.findOne({ key: `allowLogin` }).session(session.session);
+    if (!req.session?.user || (req.session.user.role !== "ADMIN" && (!allow || !allow.value))) {
       await sendStatus(res, 401, `Unauthorized.`);
       return false;
     }

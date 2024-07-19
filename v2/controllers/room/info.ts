@@ -1,10 +1,10 @@
-import type { iRoomBidInfo } from "@/v2/models/roomBidInfo";
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
-import type { iServer } from "@/v2/models/server";
-import { Server } from "@/v2/models/server";
+import { RoomBid } from "@/v2/models/roomBid";
+import { RoomBidInfo, type iRoomBidInfo } from "@/v2/models/roomBidInfo";
+import { Server, type iServer } from "@/v2/models/server";
 import { auth } from "@/v2/utils/auth";
 import { logAndThrow, reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
+import { isEligible } from "@/v2/utils/room";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
 import type { IncomingMessage, ServerResponse, Server as httpServer } from "http";
 
@@ -15,6 +15,12 @@ const schema = {
       properties: {
         info: {
           $ref: `roomBidInfo`,
+        },
+        bids: {
+          type: `array`,
+          items: {
+            $ref: `roomBid`,
+          },
         },
         system: {
           type: `object`,
@@ -39,7 +45,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
       iServer | iRoomBidInfo | null
     >(
       await Promise.allSettled([
-        RoomBidInfo.findOne({ user: user._id }).session(session.session).lean(),
+        RoomBidInfo.findOne({ user: user._id }).select(`-user`).session(session.session).populate(`room`).lean(),
         Server.findOne({ key: `roomBidOpen` }).session(session.session),
         Server.findOne({ key: `roomBidClose` }).session(session.session),
       ]),
@@ -51,13 +57,18 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
     }
 
     if (info) {
-      info.user = undefined;
-      const curDate = Date.now();
-      info.canBid = info.isEligible && (bidOpen.value as number) <= curDate && curDate <= (bidClose.value as number);
+      info.canBid = await isEligible(user, session);
     }
+
+    const bids = await RoomBid.find({ user: user._id })
+      .select(`-user`)
+      .populate(`room`)
+      .session(session.session)
+      .lean();
 
     return await success(res, {
       info,
+      bids,
       system: {
         bidOpen: bidOpen.value as number,
         bidClose: bidClose.value as number,

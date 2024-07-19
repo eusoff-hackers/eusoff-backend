@@ -1,7 +1,9 @@
-import { logger } from "./logger";
+import { logger, reportError } from "./logger";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ClientSession } from "mongoose";
 import mongoose from "mongoose";
+
+const ATTEMPT_LIMIT = 10;
 
 class MongoSession {
   #session: ClientSession | undefined;
@@ -21,11 +23,21 @@ class MongoSession {
     });
   }
 
+  async attemptCommit(attemptN: number) {
+    try {
+      await (this.#session as ClientSession).commitTransaction();
+    } catch (error) {
+      reportError(error, `Commit error`);
+      if (attemptN < ATTEMPT_LIMIT) await this.attemptCommit(attemptN + 1);
+      else throw error;
+    }
+  }
+
   async commit() {
     if (!this.#session) {
       throw new Error(`No session.`);
     }
-    await (this.#session as ClientSession).commitTransaction();
+    await this.attemptCommit(0);
   }
 
   async abort() {

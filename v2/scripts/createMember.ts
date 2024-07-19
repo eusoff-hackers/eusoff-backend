@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Member } from "@/v2/models/member";
 import mongoose from "mongoose";
 

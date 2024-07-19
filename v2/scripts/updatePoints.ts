@@ -17,6 +17,7 @@ const DISTRIBUTIONS = [
   "cmc",
   "aca",
   "band",
+  "rockfest",
   "choir",
   "drama",
   "edc",
@@ -81,6 +82,7 @@ const DISTRIBUTIONS = [
   "ew audio",
   "ew design",
   "ew dmm",
+  "ew logs",
   "ew cro",
   "audit",
   "elections",
@@ -205,7 +207,7 @@ interface Data {
         for (const user of result) {
           const tmp = await User.findOne({ username: user.username }).session(session);
           if (!tmp || tmp.role !== "USER") missing.push(user);
-          else if ((await RoomBidInfo.countDocuments({ user: tmp._id })) !== 0) {
+          else if ((await RoomBidInfo.countDocuments({ user: tmp._id }).session(session)) !== 0) {
             await RoomBidInfo.updateOne(
               { user: tmp._id },
               {

@@ -1,8 +1,7 @@
 /* eslint-disable no-console */
-import type { iUser } from "@/v2/models/user";
-import { User } from "@/v2/models/user";
+import { User, type iUser } from "@/v2/models/user";
 import { parse } from "csv-parse";
-import * as fs from "fs";
+import { readFileSync } from "fs";
 import type { Types } from "mongoose";
 import mongoose from "mongoose";
 
@@ -26,7 +25,7 @@ interface oldUser extends iUser {
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
   const csvFilePath = "./v2/scripts/csv/formatted_data.csv";
-  const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
+  const fileContent = readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
     fileContent,

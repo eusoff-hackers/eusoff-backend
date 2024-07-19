@@ -1,7 +1,7 @@
-import type { iCca } from "@/v2/models/cca";
 import { Cca } from "@/v2/models/cca";
-import type { iCcaInfo } from "@/v2/models/ccaInfo";
+import type { iCca } from "@/v2/models/cca";
 import { CcaInfo } from "@/v2/models/ccaInfo";
+import type { iCcaInfo } from "@/v2/models/ccaInfo";
 import { CcaSignup } from "@/v2/models/ccaSignup";
 import { Server } from "@/v2/models/server";
 import { auth } from "@/v2/utils/auth";

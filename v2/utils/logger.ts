@@ -2,7 +2,6 @@ import type { MongoSession } from "./mongoSession";
 import { EventLog } from "@/v2/models/eventLog";
 import { Types } from "mongoose";
 import winston from "winston";
-import "winston-mongodb";
 
 const { env } = process;
 const LOG_LEVEL: `production` | `warn` | `info` = env.NODE_ENV === "production" ? "warn" : "info";
@@ -35,13 +34,17 @@ function logAndThrow<Type>(jobs: PromiseSettledResult<Type>[], message: string):
   return (jobs.filter((j) => j.status === "fulfilled") as PromiseFulfilledResult<Type>[]).map((j) => j.value);
 }
 
-function reportError(error: unknown, template: string) {
-  if (error instanceof Error) {
-    logger.error(`${template}: ${error.message}.`, { error });
-  } else {
-    logger.error(`Thrown error is not an error: ${template}: ${error}`, {
-      error,
-    });
+async function reportError(error: unknown, template: string) {
+  try {
+    if (error instanceof Error) {
+      await logger.error(`${template}: ${error.message}.`, { error });
+    } else {
+      await logger.error(`Thrown error is not an error: ${template}: ${error}`, {
+        error,
+      });
+    }
+  } catch (error2) {
+    reportError(error2, `Error report error.`);
   }
 }
 

@@ -10,7 +10,9 @@ import { rIhgPoint } from "./ihgPoint";
 import { rIhgSport } from "./ihgSport";
 import { rJersey } from "./jersey";
 import { rRoom } from "./room";
+import { rRoomBid } from "./roomBid";
 import { rRoomBidInfo } from "./roomBidInfo";
+import { rRoomBlock } from "./roomBlock";
 import { rTeam } from "./team";
 
 /* eslint-disable global-require */
@@ -33,6 +35,8 @@ async function addSchemas(fastify: FastifyInstance) {
   await fastify.addSchema(rIhgPlacement);
   await fastify.addSchema(rRoom);
   await fastify.addSchema(rRoomBidInfo);
+  await fastify.addSchema(rRoomBid);
+  await fastify.addSchema(rRoomBlock);
 }
 
 export { addSchemas };

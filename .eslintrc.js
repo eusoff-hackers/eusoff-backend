@@ -31,6 +31,7 @@ module.exports = {
         args: "none",
       },
     ],
+    "no-console": ["error"],
     "promise/catch-or-return": [
       "error",
       {
