@@ -1,15 +1,14 @@
 /* eslint-disable no-console */
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable no-await-in-loop */
 
-import { parse } from 'csv-parse';
-import * as fs from 'fs';
-import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
-import type { iUser } from '@/v2/models/user';
-import { User } from '@/v2/models/user';
+/* eslint-disable no-restricted-syntax */
+
+/* eslint-disable no-await-in-loop */
+import type { iUser } from "@/v2/models/user";
+import { User } from "@/v2/models/user";
+import bcrypt from "bcrypt";
+import { parse } from "csv-parse";
+import * as fs from "fs";
+import mongoose from "mongoose";
 
 const SALT_ROUNDS = 10;
 
@@ -30,13 +29,13 @@ async function hashPassword(password: string) {
 
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
-  const csvFilePath = './v2/scripts/csv/passworded.csv';
-  const fileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
+  const csvFilePath = "./v2/scripts/csv/passworded.csv";
+  const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
     fileContent,
     {
-      delimiter: ',',
+      delimiter: ",",
       columns: true,
     },
     async (error, result: Data[]) => {

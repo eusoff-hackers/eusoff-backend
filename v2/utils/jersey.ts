@@ -1,22 +1,20 @@
-import type { iBiddingInfo } from '@/v2/models/biddingInfo';
-import { BiddingInfo } from '@/v2/models/biddingInfo';
-import type { iJersey } from '@/v2/models/jersey';
-import { Jersey } from '@/v2/models/jersey';
-import { Member } from '@/v2/models/member';
-import { JerseyBan } from '@/v2/models/jerseyBan';
-import type { iServer } from '@/v2/models/server';
-import { Server } from '@/v2/models/server';
-import type { iUser } from '@/v2/models/user';
-import { logAndThrow, logger, reportError } from './logger';
-import type { MongoSession } from './mongoSession';
+import { logAndThrow, logger, reportError } from "./logger";
+import type { MongoSession } from "./mongoSession";
+import type { iBiddingInfo } from "@/v2/models/biddingInfo";
+import { BiddingInfo } from "@/v2/models/biddingInfo";
+import type { iJersey } from "@/v2/models/jersey";
+import { Jersey } from "@/v2/models/jersey";
+import { JerseyBan } from "@/v2/models/jerseyBan";
+import { Member } from "@/v2/models/member";
+import type { iServer } from "@/v2/models/server";
+import { Server } from "@/v2/models/server";
+import type { iUser } from "@/v2/models/user";
 
 async function checkUser(user: iUser, session: MongoSession): Promise<boolean> {
   try {
-    const [bidOpen, round, bidInfo]: [
-      iServer | null,
-      iServer | null,
-      iBiddingInfo | null,
-    ] = logAndThrow<iServer | iBiddingInfo | null>(
+    const [bidOpen, round, bidInfo]: [iServer | null, iServer | null, iBiddingInfo | null] = logAndThrow<
+      iServer | iBiddingInfo | null
+    >(
       await Promise.allSettled([
         Server.findOne({ key: `bidOpen` }).session(session.session),
         Server.findOne({ key: `biddingRound` }).session(session.session),
@@ -30,11 +28,7 @@ async function checkUser(user: iUser, session: MongoSession): Promise<boolean> {
       throw new Error(`Some datas are null | undefined`);
     }
 
-    if (
-      bidInfo.round > (round.value as number) ||
-      (bidOpen.value as boolean) === false ||
-      bidInfo.allocated
-    )
+    if (bidInfo.round > (round.value as number) || (bidOpen.value as boolean) === false || bidInfo.allocated)
       return false;
 
     return true;
@@ -45,19 +39,12 @@ async function checkUser(user: iUser, session: MongoSession): Promise<boolean> {
 }
 
 async function getTeams(user: iUser, session: MongoSession) {
-  return (
-    await Member.find({ user: user._id })
-      .lean()
-      .populate(`team`)
-      .session(session.session)
-  ).map((team) => team.team._id);
+  return (await Member.find({ user: user._id }).lean().populate(`team`).session(session.session)).map(
+    (team) => team.team._id,
+  );
 }
 
-async function isEligible(
-  user: iUser,
-  jerseys: iJersey[],
-  session: MongoSession,
-) {
+async function isEligible(user: iUser, jerseys: iJersey[], session: MongoSession) {
   try {
     if ((await checkUser(user, session)) === false) return false;
 
@@ -82,19 +69,14 @@ async function isEligible(
   }
 }
 
-async function getEligible(
-  user: iUser,
-  session: MongoSession,
-): Promise<number[]> {
+async function getEligible(user: iUser, session: MongoSession): Promise<number[]> {
   if ((await checkUser(user, session)) === false) {
     return [];
   }
 
   const teams = await getTeams(user, session);
 
-  const banned = (
-    await JerseyBan.find({ team: { $in: teams } }).session(session.session)
-  ).map((ban) => ban.jersey);
+  const banned = (await JerseyBan.find({ team: { $in: teams } }).session(session.session)).map((ban) => ban.jersey);
 
   const eligibleJerseys = (await Jersey.find({ _id: { $nin: banned } }))
     .filter((j) => j.quota[user.gender] !== 0)

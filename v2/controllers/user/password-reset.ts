@@ -1,11 +1,11 @@
-import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import type { IncomingMessage, Server, ServerResponse } from 'http';
-import type { FromSchema } from 'json-schema-to-ts';
-import bcrypt from 'bcryptjs';
-import { sendError, sendStatus } from '@/v2/utils/req_handler';
-import { User } from '@/v2/models/user';
-import { reportError } from '@/v2/utils/logger';
-import { auth } from '@/v2/utils/auth';
+import { User } from "@/v2/models/user";
+import { auth } from "@/v2/utils/auth";
+import { reportError } from "@/v2/utils/logger";
+import { sendError, sendStatus } from "@/v2/utils/req_handler";
+import bcrypt from "bcryptjs";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
+import type { FromSchema } from "json-schema-to-ts";
 
 const schema = {
   body: {
@@ -26,10 +26,7 @@ const schema = {
 
 type iBody = FromSchema<typeof schema.body>;
 
-async function handler(
-  req: FastifyRequest<{ Body: iBody }>,
-  res: FastifyReply,
-) {
+async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
     const {
@@ -38,20 +35,15 @@ async function handler(
 
     const user = req.session.get(`user`)!;
 
-    await User.findOneAndUpdate(
-      { _id: user._id },
-      { password: await bcrypt.hash(password, 10) },
-    ).session(session.session);
+    await User.findOneAndUpdate({ _id: user._id }, { password: await bcrypt.hash(password, 10) }).session(
+      session.session,
+    );
 
     try {
       await session.commit();
     } catch (error) {
       await session.abort();
-      return await sendStatus(
-        res,
-        429,
-        `Please wait for a while before making another request.`,
-      );
+      return await sendStatus(res, 429, `Please wait for a while before making another request.`);
     }
 
     return await sendStatus(res, 200, `Saved!`);
@@ -63,12 +55,7 @@ async function handler(
   }
 }
 
-const passwordReset: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  { Body: iBody }
-> = {
+const passwordReset: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
   url: `/password-reset`,
   schema,

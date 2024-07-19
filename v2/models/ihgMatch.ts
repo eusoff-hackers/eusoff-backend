@@ -1,5 +1,5 @@
-import type { Document, Types } from 'mongoose';
-import { Schema, model } from 'mongoose';
+import type { Document, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 
 interface iIhgMatch extends Document {
   red: Types.ObjectId;

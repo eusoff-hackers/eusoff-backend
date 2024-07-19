@@ -1,8 +1,8 @@
-import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import type { IncomingMessage, Server, ServerResponse } from 'http';
-import { Hall } from '@/v2/models/hall';
-import { success, resBuilder, sendError } from '@/v2/utils/req_handler';
-import { reportError } from '@/v2/utils/logger';
+import { Hall } from "@/v2/models/hall";
+import { reportError } from "@/v2/utils/logger";
+import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
 
 const schema = {
   response: {
@@ -28,12 +28,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   }
 }
 
-const list: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  Record<string, never>
-> = {
+const list: RouteOptions<Server, IncomingMessage, ServerResponse, Record<string, never>> = {
   method: `GET`,
   url: `/list`,
   schema,

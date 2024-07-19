@@ -1,20 +1,19 @@
 /* eslint-disable no-console */
-
-import { parse } from 'csv-parse';
-import * as fs from 'fs';
-import type { iUser } from '@/v2/models/user';
-import { User } from '@/v2/models/user';
-import type { Types } from 'mongoose';
-import mongoose from 'mongoose';
+import type { iUser } from "@/v2/models/user";
+import { User } from "@/v2/models/user";
+import { parse } from "csv-parse";
+import * as fs from "fs";
+import type { Types } from "mongoose";
+import mongoose from "mongoose";
 
 interface Data {
-  'Name Preferred': string;
-  Gender: 'Male' | 'Female';
+  "Name Preferred": string;
+  Gender: "Male" | "Female";
   Nationality: string;
-  'Year of Study': number;
+  "Year of Study": number;
   NUSNET: string;
   Email: string;
-  'Room no': string;
+  "Room no": string;
 }
 
 interface oldUser extends iUser {
@@ -35,13 +34,13 @@ interface Body {
 
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
-  const csvFilePath = './v2/scripts/csv/formatted_data.csv';
-  const fileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
+  const csvFilePath = "./v2/scripts/csv/formatted_data.csv";
+  const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
     fileContent,
     {
-      delimiter: ',',
+      delimiter: ",",
       columns: true,
     },
     async (error, result: Data[]) => {
@@ -60,7 +59,7 @@ interface Body {
         await User.updateOne(
           { email: user.Email },
           {
-            $set: { username: user.NUSNET, room: user['Room no'] },
+            $set: { username: user.NUSNET, room: user["Room no"] },
             $unset: {
               teams: 1,
               bids: 1,

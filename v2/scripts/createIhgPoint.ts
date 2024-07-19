@@ -1,7 +1,8 @@
+import { Hall } from "@/v2/models/hall";
+import { IhgPoint } from "@/v2/models/ihgPoint";
+import mongoose from "mongoose";
+
 const { env } = process;
-import mongoose from 'mongoose';
-import { IhgPoint } from '@/v2/models/ihgPoint';
-import { Hall } from '@/v2/models/hall';
 
 async function run() {
   await mongoose.connect(env.MONGO_URI);

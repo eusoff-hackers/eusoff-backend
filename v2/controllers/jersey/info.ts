@@ -1,34 +1,34 @@
-import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import type { IncomingMessage, Server, ServerResponse } from 'http';
-import { success, sendError, resBuilder } from '@/v2/utils/req_handler';
-import { reportError, logAndThrow } from '@/v2/utils/logger';
-import type { iJersey } from '@/v2/models/jersey';
-import { Jersey } from '@/v2/models/jersey';
-import type { MongoSession } from '@/v2/utils/mongoSession';
-import { Bid } from '@/v2/models/bid';
-import { BiddingInfo } from '@/v2/models/biddingInfo';
-import { setCache, checkCache } from '@/v2/utils/cache_handler';
-import type { iUser } from '@/v2/models/user';
+import { Bid } from "@/v2/models/bid";
+import { BiddingInfo } from "@/v2/models/biddingInfo";
+import type { iJersey } from "@/v2/models/jersey";
+import { Jersey } from "@/v2/models/jersey";
+import type { iUser } from "@/v2/models/user";
+import { checkCache, setCache } from "@/v2/utils/cache_handler";
+import { logAndThrow, reportError } from "@/v2/utils/logger";
+import type { MongoSession } from "@/v2/utils/mongoSession";
+import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
 
 const schema = {
   response: {
     200: resBuilder({
-      type: 'object',
+      type: "object",
       patternProperties: {
-        '^[0-9]{1,2}$': {
+        "^[0-9]{1,2}$": {
           type: `object`,
           properties: {
             Male: {
               type: `array`,
               items: {
-                $ref: 'biddingInfo',
+                $ref: "biddingInfo",
               },
               additionalProperties: false,
             },
             Female: {
               type: `array`,
               items: {
-                $ref: 'biddingInfo',
+                $ref: "biddingInfo",
               },
             },
             quota: {
@@ -49,16 +49,11 @@ const schema = {
 };
 
 async function getJerseyInfo(jersey: iJersey, session: MongoSession) {
-  const bidders = await Bid.find({ jersey: jersey._id }).session(
-    session.session,
-  );
+  const bidders = await Bid.find({ jersey: jersey._id }).session(session.session);
   const users = logAndThrow(
     await Promise.allSettled(
       bidders.map((bidder) =>
-        BiddingInfo.findOne({ user: bidder.user })
-          .populate<{ user: iUser }>(`user`)
-          .orFail()
-          .session(session.session),
+        BiddingInfo.findOne({ user: bidder.user }).populate<{ user: iUser }>(`user`).orFail().session(session.session),
       ),
     ),
     `Bidder info retrieval error`,
@@ -91,10 +86,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
       `Jersey info parsing error`,
     );
 
-    const data = jerseyData.reduce(
-      (a, v) => ({ ...a, [v.number]: v.info }),
-      {},
-    );
+    const data = jerseyData.reduce((a, v) => ({ ...a, [v.number]: v.info }), {});
     return await success(res, data);
   } catch (error) {
     reportError(error, `Jersey Info handler error`);
@@ -104,12 +96,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   }
 }
 
-const info: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  Record<string, never>
-> = {
+const info: RouteOptions<Server, IncomingMessage, ServerResponse, Record<string, never>> = {
   method: `GET`,
   url: `/info`,
   schema,

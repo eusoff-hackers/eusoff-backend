@@ -7,7 +7,7 @@ async function run() {
   await mongoose.connect(env.MONGO_URI);
 
   await User.create({
-    username: 'C111',
+    username: "C111",
     password: await bcrypt.hash(`mediumcoock`, 10),
     year: 1,
     role: `ADMIN`,

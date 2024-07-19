@@ -1,7 +1,7 @@
-import type { IOAuthController } from '@boxyhq/saml-jackson';
-import { controllers } from '@boxyhq/saml-jackson';
-import * as fs from 'fs';
-import { reportError, logger } from './logger';
+import { logger, reportError } from "./logger";
+import type { IOAuthController } from "@boxyhq/saml-jackson";
+import { controllers } from "@boxyhq/saml-jackson";
+import * as fs from "fs";
 
 /* eslint-disable import/no-mutable-exports */
 let apiController;
@@ -10,9 +10,9 @@ let oauthController: IOAuthController;
 const jacksonOptions = {
   externalUrl: process.env.BACKEND_URL,
   samlAudience: process.env.SSO_AUDIENCE,
-  samlPath: '/sso/acs',
+  samlPath: "/sso/acs",
   db: {
-    engine: 'mongo' as const,
+    engine: "mongo" as const,
     url: process.env.MONGO_URI,
   },
   ory: {

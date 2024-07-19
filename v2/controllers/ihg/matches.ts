@@ -1,8 +1,8 @@
-import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import type { IncomingMessage, Server, ServerResponse } from 'http';
-import { IhgMatch } from '@/v2/models/ihgMatch';
-import { success, resBuilder, sendError } from '@/v2/utils/req_handler';
-import { reportError } from '@/v2/utils/logger';
+import { IhgMatch } from "@/v2/models/ihgMatch";
+import { reportError } from "@/v2/utils/logger";
+import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
 
 const schema = {
   response: {
@@ -32,12 +32,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   }
 }
 
-const matches: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  Record<string, never>
-> = {
+const matches: RouteOptions<Server, IncomingMessage, ServerResponse, Record<string, never>> = {
   method: `GET`,
   url: `/matches`,
   schema,

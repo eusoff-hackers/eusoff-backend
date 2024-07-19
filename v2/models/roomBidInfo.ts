@@ -1,5 +1,5 @@
-import type { Types, Document } from 'mongoose';
-import { Schema, model } from 'mongoose';
+import type { Document, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 
 interface iPointsDistribution extends Document {
   cca: string;

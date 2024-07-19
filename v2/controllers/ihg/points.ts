@@ -1,10 +1,10 @@
-import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import type { IncomingMessage, Server, ServerResponse } from 'http';
-import { success, resBuilder, sendError } from '@/v2/utils/req_handler';
-import { reportError, logAndThrow } from '@/v2/utils/logger';
-import { IhgPlacement } from '@/v2/models/ihgPlacement';
-import { Hall } from '@/v2/models/hall';
-import { setCache, checkCache } from '@/v2/utils/cache_handler';
+import { Hall } from "@/v2/models/hall";
+import { IhgPlacement } from "@/v2/models/ihgPlacement";
+import { checkCache, setCache } from "@/v2/utils/cache_handler";
+import { logAndThrow, reportError } from "@/v2/utils/logger";
+import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
+import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
+import type { IncomingMessage, Server, ServerResponse } from "http";
 
 const POINTS_REWARD = {
   carnival: [0, 6, 5, 4, 3, 2, 1],
@@ -38,9 +38,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
     const ret = logAndThrow(
       await Promise.allSettled(
         halls.map(async (h) => {
-          const placements = await IhgPlacement.find({ hall: h._id })
-            .populate(`sport`)
-            .session(session.session);
+          const placements = await IhgPlacement.find({ hall: h._id }).populate(`sport`).session(session.session);
 
           if (!placements) return { hall: h, points: 0 };
 
@@ -84,12 +82,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   }
 }
 
-const points: RouteOptions<
-  Server,
-  IncomingMessage,
-  ServerResponse,
-  Record<string, never>
-> = {
+const points: RouteOptions<Server, IncomingMessage, ServerResponse, Record<string, never>> = {
   method: `GET`,
   url: `/points`,
   schema,

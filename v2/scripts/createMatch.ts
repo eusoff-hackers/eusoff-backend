@@ -1,6 +1,7 @@
+import { IhgMatch } from "@/v2/models/ihgMatch";
+import mongoose from "mongoose";
+
 const { env } = process;
-import mongoose from 'mongoose';
-import { IhgMatch } from '@/v2/models/ihgMatch';
 
 async function run() {
   await mongoose.connect(env.MONGO_URI);

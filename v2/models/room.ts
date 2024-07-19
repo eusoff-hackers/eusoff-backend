@@ -1,5 +1,5 @@
-import type { Document } from 'mongoose';
-import { Schema, model } from 'mongoose';
+import type { Document } from "mongoose";
+import { Schema, model } from "mongoose";
 
 const BLOCKS_LIST = [`A`, `B`, `C`, `D`, `E`];
 

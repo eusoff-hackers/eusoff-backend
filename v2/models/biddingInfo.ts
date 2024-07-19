@@ -1,6 +1,6 @@
-import type { Types, Document } from 'mongoose';
-import { Schema, model } from 'mongoose';
-import './jersey';
+import "./jersey";
+import type { Document, Types } from "mongoose";
+import { Schema, model } from "mongoose";
 
 interface iBiddingInfo extends Document {
   user?: Types.ObjectId;

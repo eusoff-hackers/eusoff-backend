@@ -1,16 +1,16 @@
-import type { FastifyInstance } from 'fastify';
-import { success } from '@/v2/utils/req_handler';
-import { addSchemas } from '@/v2/models/fastify-schemas';
-import { addSession } from '@/v2/utils/mongoSession';
-import user from './user';
-import team from './team';
-import bid from './bid';
-import jersey from './jersey';
-import sso from './sso';
-import cca from './cca';
-import hall from './hall';
-import ihg from './ihg';
-import room from './room';
+import bid from "./bid";
+import cca from "./cca";
+import hall from "./hall";
+import ihg from "./ihg";
+import jersey from "./jersey";
+import room from "./room";
+import sso from "./sso";
+import team from "./team";
+import user from "./user";
+import { addSchemas } from "@/v2/models/fastify-schemas";
+import { addSession } from "@/v2/utils/mongoSession";
+import { success } from "@/v2/utils/req_handler";
+import type { FastifyInstance } from "fastify";
 
 export default async (fastify: FastifyInstance) => {
   await addSchemas(fastify);

@@ -1,21 +1,21 @@
-import type { FastifyInstance } from 'fastify';
+import { rBid } from "./bid";
+import { rBiddingInfo } from "./biddingInfo";
+import { rCca } from "./cca";
+import { rCcaInfo } from "./ccaInfo";
+import { rCcaSignup } from "./ccaSignup";
+import { rHall } from "./hall";
+import { rIhgMatch } from "./ihgMatch";
+import { rIhgPlacement } from "./ihgPlacement";
+import { rIhgPoint } from "./ihgPoint";
+import { rIhgSport } from "./ihgSport";
+import { rJersey } from "./jersey";
+import { rRoom } from "./room";
+import { rRoomBidInfo } from "./roomBidInfo";
+import { rTeam } from "./team";
 
 /* eslint-disable global-require */
-import { rUser } from './user';
-import { rTeam } from './team';
-import { rBiddingInfo } from './biddingInfo';
-import { rBid } from './bid';
-import { rJersey } from './jersey';
-import { rCca } from './cca';
-import { rCcaInfo } from './ccaInfo';
-import { rCcaSignup } from './ccaSignup';
-import { rHall } from './hall';
-import { rIhgMatch } from './ihgMatch';
-import { rIhgPoint } from './ihgPoint';
-import { rIhgSport } from './ihgSport';
-import { rIhgPlacement } from './ihgPlacement';
-import { rRoom } from './room';
-import { rRoomBidInfo } from './roomBidInfo';
+import { rUser } from "./user";
+import type { FastifyInstance } from "fastify";
 
 async function addSchemas(fastify: FastifyInstance) {
   await fastify.addSchema(rUser);

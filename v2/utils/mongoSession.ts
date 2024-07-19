@@ -1,7 +1,7 @@
-import type { FastifyInstance, FastifyRequest } from 'fastify';
-import type { ClientSession } from 'mongoose';
-import mongoose from 'mongoose';
-import { logger } from './logger';
+import { logger } from "./logger";
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { ClientSession } from "mongoose";
+import mongoose from "mongoose";
 
 class MongoSession {
   #session: ClientSession | undefined;

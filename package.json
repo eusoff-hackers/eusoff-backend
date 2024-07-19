@@ -53,6 +53,7 @@
     "xkpasswd": "^1.0.5"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.14.11",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -63,6 +64,7 @@
     "eslint-config-prettier": "9.0.0",
     "eslint-plugin-no-relative-import-paths": "^1.5.5",
     "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-promise": "^6.4.0",
     "eslint-plugin-unused-imports": "^3.2.0",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
