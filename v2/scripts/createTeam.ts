@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Team } from "@/v2/models/team";
 import mongoose from "mongoose";
 

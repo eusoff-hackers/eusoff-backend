@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Hall } from "@/v2/models/hall";
 import { IhgPlacement } from "@/v2/models/ihgPlacement";
 import { IhgSport } from "@/v2/models/ihgSport";

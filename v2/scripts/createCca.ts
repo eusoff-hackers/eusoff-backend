@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Cca } from "@/v2/models/cca";
 import mongoose from "mongoose";
 

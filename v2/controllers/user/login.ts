@@ -1,10 +1,11 @@
+import { Server } from "@/v2/models/server";
 import { User } from "@/v2/models/user";
 import * as auth from "@/v2/utils/auth";
 import { logEvent, reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, sendStatus, success } from "@/v2/utils/req_handler";
 import * as bcrypt from "bcryptjs";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
-import type { IncomingMessage, Server, ServerResponse } from "http";
+import type { IncomingMessage, ServerResponse, Server as httpServer } from "http";
 import type { FromSchema } from "json-schema-to-ts";
 
 const schema = {
@@ -53,6 +54,10 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
       return sendStatus(res, 401, `Invalid credentials.`);
     }
 
+    const allow = await Server.findOne({ key: `allowLogin` }).session(session.session);
+    if (user.role !== "ADMIN" && (!allow || !allow.value)) {
+      return await sendStatus(res, 401, `Login disabled.`);
+    }
     await auth.login(user, req);
 
     await logEvent(`USER LOGIN`, session, user._id);
@@ -72,7 +77,7 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
   }
 }
 
-const login: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
+const login: RouteOptions<httpServer, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
   url: `/login`,
   schema,

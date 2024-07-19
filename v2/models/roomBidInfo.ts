@@ -1,3 +1,5 @@
+import type { iUser } from "./user";
+import type { iRoom } from "@/v2/models/room";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
 
@@ -7,11 +9,15 @@ interface iPointsDistribution extends Document {
 }
 
 interface iRoomBidInfo extends Document {
-  user?: Types.ObjectId;
+  user?: Types.ObjectId | iUser;
   isEligible: boolean;
   points: number;
   canBid?: boolean;
   pointsDistribution: iPointsDistribution[];
+  lastSaveMail: Date;
+  lastAlertMail: Date;
+  isAllocated: boolean;
+  room?: Types.ObjectId | iRoom;
 }
 
 const rRoomBidInfo = {
@@ -34,6 +40,8 @@ const rRoomBidInfo = {
       },
     },
     canBid: { type: `boolean` },
+    isAllocated: { type: `boolean` },
+    room: { $ref: `room` },
   },
   additionalProperties: false,
 };
@@ -56,6 +64,18 @@ const roomBidInfoSchema = new Schema<iRoomBidInfo>({
   pointsDistribution: {
     type: [{ type: pointsDistributionSchema }],
     default: [],
+  },
+  isAllocated: { type: Boolean, required: true, default: false },
+  room: { type: Schema.Types.ObjectId, ref: `Room` },
+  lastSaveMail: {
+    type: Date,
+    required: true,
+    default: 0,
+  },
+  lastAlertMail: {
+    type: Date,
+    required: true,
+    default: 0,
   },
 });
 
