@@ -1,12 +1,13 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { FromSchema } from 'json-schema-to-ts';
-import { reportError, logEvent, logAndThrow } from '../../../utils/logger';
-import { sendError, sendStatus } from '../../../utils/req_handler';
-import { Hall } from '../../../models/hall';
-import { IhgSport } from '../../../models/ihgSport';
-import { iIhgPlacement, IhgPlacement } from '../../../models/ihgPlacement';
-import { admin } from '../../../utils/auth';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import type { FromSchema } from 'json-schema-to-ts';
+import { reportError, logEvent, logAndThrow } from '@/v2/utils/logger';
+import { sendError, sendStatus } from '@/v2/utils/req_handler';
+import { Hall } from '@/v2/models/hall';
+import { IhgSport } from '@/v2/models/ihgSport';
+import type { iIhgPlacement } from '@/v2/models/ihgPlacement';
+import { IhgPlacement } from '@/v2/models/ihgPlacement';
+import { admin } from '@/v2/utils/auth';
 
 const schema = {
   body: {

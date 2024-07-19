@@ -1,13 +1,14 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { success, sendError, resBuilder } from '../../utils/req_handler';
-import { reportError, logAndThrow } from '../../utils/logger';
-import { Jersey, iJersey } from '../../models/jersey';
-import { MongoSession } from '../../utils/mongoSession';
-import { Bid } from '../../models/bid';
-import { BiddingInfo } from '../../models/biddingInfo';
-import { setCache, checkCache } from '../../utils/cache_handler';
-import { iUser } from '../../models/user';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import { success, sendError, resBuilder } from '@/v2/utils/req_handler';
+import { reportError, logAndThrow } from '@/v2/utils/logger';
+import type { iJersey } from '@/v2/models/jersey';
+import { Jersey } from '@/v2/models/jersey';
+import type { MongoSession } from '@/v2/utils/mongoSession';
+import { Bid } from '@/v2/models/bid';
+import { BiddingInfo } from '@/v2/models/biddingInfo';
+import { setCache, checkCache } from '@/v2/utils/cache_handler';
+import type { iUser } from '@/v2/models/user';
 
 const schema = {
   response: {

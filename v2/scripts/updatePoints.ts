@@ -8,8 +8,8 @@
 import { parse } from 'csv-parse';
 import * as fs from 'fs';
 import mongoose from 'mongoose';
-import { User } from '../models/user';
-import { RoomBidInfo } from '../models/roomBidInfo';
+import { User } from '@/v2/models/user';
+import { RoomBidInfo } from '@/v2/models/roomBidInfo';
 
 const DISTRIBUTIONS = [
   'External CCA',
@@ -207,20 +207,22 @@ interface Data {
             session,
           );
           if (!tmp || tmp.role !== 'USER') missing.push(user);
-          else if ((await RoomBidInfo.countDocuments({ user: tmp._id })) !== 0) {
-              await RoomBidInfo.updateOne(
-                { user: tmp._id },
-                {
-                  user: tmp._id,
-                  isEligible: false,
-                  points: user.points,
-                  pointsDistribution: DISTRIBUTIONS.map((k) => ({
-                    cca: k,
-                    points: user[k as keyof Data],
-                  })).filter((c) => c.points && c.points !== '0'),
-                },
-              ).session(session);
-            } else res.push(user);
+          else if (
+            (await RoomBidInfo.countDocuments({ user: tmp._id })) !== 0
+          ) {
+            await RoomBidInfo.updateOne(
+              { user: tmp._id },
+              {
+                user: tmp._id,
+                isEligible: false,
+                points: user.points,
+                pointsDistribution: DISTRIBUTIONS.map((k) => ({
+                  cca: k,
+                  points: user[k as keyof Data],
+                })).filter((c) => c.points && c.points !== '0'),
+              },
+            ).session(session);
+          } else res.push(user);
         }
 
         console.log(

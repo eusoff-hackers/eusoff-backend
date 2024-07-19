@@ -1,13 +1,19 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server as HttpServer, ServerResponse } from 'http';
-import { FromSchema } from 'json-schema-to-ts';
-import { sendError, sendStatus } from '../../utils/req_handler';
-import { reportError, logEvent } from '../../utils/logger';
-import { auth } from '../../utils/auth';
-import { Cca, iCca } from '../../models/cca';
-import { CcaInfo, iCcaInfo } from '../../models/ccaInfo';
-import { CcaSignup } from '../../models/ccaSignup';
-import { Server } from '../../models/server';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type {
+  IncomingMessage,
+  Server as HttpServer,
+  ServerResponse,
+} from 'http';
+import type { FromSchema } from 'json-schema-to-ts';
+import { sendError, sendStatus } from '@/v2/utils/req_handler';
+import { reportError, logEvent } from '@/v2/utils/logger';
+import { auth } from '@/v2/utils/auth';
+import type { iCca } from '@/v2/models/cca';
+import { Cca } from '@/v2/models/cca';
+import type { iCcaInfo } from '@/v2/models/ccaInfo';
+import { CcaInfo } from '@/v2/models/ccaInfo';
+import { CcaSignup } from '@/v2/models/ccaSignup';
+import { Server } from '@/v2/models/server';
 
 const schema = {
   body: {

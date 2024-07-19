@@ -1,4 +1,4 @@
-import { FastifyReply } from 'fastify';
+import type { FastifyReply } from 'fastify';
 import { logger } from './logger';
 
 async function success<Type>(res: FastifyReply, data: Type) {

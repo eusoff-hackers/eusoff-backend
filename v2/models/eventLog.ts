@@ -1,4 +1,5 @@
-import { Document, Schema, model, Types } from 'mongoose';
+import type { Document, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
 interface iEventLog extends Document {
   user?: Types.ObjectId;

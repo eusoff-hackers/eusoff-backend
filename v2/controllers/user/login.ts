@@ -1,16 +1,16 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { FromSchema } from 'json-schema-to-ts';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import type { FromSchema } from 'json-schema-to-ts';
 import * as bcrypt from 'bcryptjs';
 import {
   resBuilder,
   success,
   sendStatus,
   sendError,
-} from '../../utils/req_handler';
-import { User } from '../../models/user';
-import { reportError, logEvent } from '../../utils/logger';
-import * as auth from '../../utils/auth';
+} from '@/v2/utils/req_handler';
+import { User } from '@/v2/models/user';
+import { reportError, logEvent } from '@/v2/utils/logger';
+import * as auth from '@/v2/utils/auth';
 
 const schema = {
   body: {

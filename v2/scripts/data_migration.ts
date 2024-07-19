@@ -2,12 +2,10 @@
 
 import { parse } from 'csv-parse';
 import * as fs from 'fs';
-import { User, iUser } from '../models/user';
-import { Jersey } from '../models/jersey';
-import { Member } from '../models/member';
-import { BiddingInfo } from '../models/biddingInfo';
-import mongoose, { Types } from 'mongoose';
-import { createObjectCsvWriter } from 'csv-writer';
+import type { iUser } from '@/v2/models/user';
+import { User } from '@/v2/models/user';
+import type { Types } from 'mongoose';
+import mongoose from 'mongoose';
 
 interface Data {
   'Name Preferred': string;
@@ -50,7 +48,7 @@ interface Body {
       if (error) {
         console.error(error);
       }
-      for (let user of result) {
+      for (const user of result) {
         const old = (await User.findOne({
           email: user.Email,
         }))!.toObject() as oldUser;

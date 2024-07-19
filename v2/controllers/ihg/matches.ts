@@ -1,8 +1,8 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { IhgMatch } from '../../models/ihgMatch';
-import { success, resBuilder, sendError } from '../../utils/req_handler';
-import { reportError } from '../../utils/logger';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import { IhgMatch } from '@/v2/models/ihgMatch';
+import { success, resBuilder, sendError } from '@/v2/utils/req_handler';
+import { reportError } from '@/v2/utils/logger';
 
 const schema = {
   response: {
@@ -18,7 +18,6 @@ const schema = {
 async function handler(req: FastifyRequest, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
-    console.log(new Date());
     const matches = await IhgMatch.find({ timestamp: { $gt: new Date() } })
       .populate(`red`)
       .populate(`blue`)

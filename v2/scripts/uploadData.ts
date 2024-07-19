@@ -8,7 +8,8 @@ import { parse } from 'csv-parse';
 import * as fs from 'fs';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
-import { User, iUser } from '../models/user';
+import type { iUser } from '@/v2/models/user';
+import { User } from '@/v2/models/user';
 
 const SALT_ROUNDS = 10;
 

@@ -1,7 +1,7 @@
-import { FastifyInstance } from 'fastify';
-import { success } from '../utils/req_handler';
-import { addSchemas } from '../models/fastify-schemas';
-import { addSession } from '../utils/mongoSession';
+import type { FastifyInstance } from 'fastify';
+import { success } from '@/v2/utils/req_handler';
+import { addSchemas } from '@/v2/models/fastify-schemas';
+import { addSession } from '@/v2/utils/mongoSession';
 import user from './user';
 import team from './team';
 import bid from './bid';

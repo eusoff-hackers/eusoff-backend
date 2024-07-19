@@ -1,9 +1,9 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { sendError, resBuilder, success } from '../../utils/req_handler';
-import { Member } from '../../models/member';
-import { reportError } from '../../utils/logger';
-import { auth } from '../../utils/auth';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import { sendError, resBuilder, success } from '@/v2/utils/req_handler';
+import { Member } from '@/v2/models/member';
+import { reportError } from '@/v2/utils/logger';
+import { auth } from '@/v2/utils/auth';
 
 const schema = {
   response: {

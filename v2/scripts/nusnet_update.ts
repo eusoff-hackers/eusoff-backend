@@ -2,7 +2,7 @@
 
 import { parse } from 'csv-parse';
 import * as fs from 'fs';
-import { User } from '../models/user';
+import { User } from '@/v2/models/user';
 import mongoose from 'mongoose';
 import { createObjectCsvWriter } from 'csv-writer';
 
@@ -60,7 +60,7 @@ interface Body {
       if (error) {
         console.error(error);
       }
-      for (let user of result) {
+      for (const user of result) {
         if (!(await User.exists({ email: user.Email }))) {
           console.error(`User not found: ${user}`);
         }

@@ -1,8 +1,8 @@
 import winston from 'winston';
 import 'winston-mongodb';
 import { Types } from 'mongoose';
-import { EventLog } from '../models/eventLog';
-import { MongoSession } from './mongoSession';
+import { EventLog } from '@/v2/models/eventLog';
+import type { MongoSession } from './mongoSession';
 
 const { env } = process;
 const LOG_LEVEL: `production` | `warn` | `info` =

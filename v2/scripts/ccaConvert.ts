@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { parse } from 'csv-parse';
-import mongoose, { Types, Document } from 'mongoose';
-import { Cca, iCca } from '../models/cca';
+import mongoose from 'mongoose';
+import { Cca } from '@/v2/models/cca';
 
 interface Data {
   name: string;

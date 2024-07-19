@@ -1,6 +1,7 @@
-import { Document, Types, Schema, model, PopulatedDoc } from 'mongoose';
+import type { Document, Types, PopulatedDoc } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import './hall';
-import { iIhgSport } from './ihgSport';
+import type { iIhgSport } from './ihgSport';
 
 interface iIhgPlacement extends Document {
   hall: Types.ObjectId;

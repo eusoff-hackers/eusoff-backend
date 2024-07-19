@@ -1,11 +1,15 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server as HttpServer, ServerResponse } from 'http';
-import { success, resBuilder, sendError } from '../../utils/req_handler';
-import { logAndThrow, reportError } from '../../utils/logger';
-import { auth } from '../../utils/auth';
-import { CcaInfo } from '../../models/ccaInfo';
-import { CcaSignup } from '../../models/ccaSignup';
-import { Server } from '../../models/server';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type {
+  IncomingMessage,
+  Server as HttpServer,
+  ServerResponse,
+} from 'http';
+import { success, resBuilder, sendError } from '@/v2/utils/req_handler';
+import { logAndThrow, reportError } from '@/v2/utils/logger';
+import { auth } from '@/v2/utils/auth';
+import { CcaInfo } from '@/v2/models/ccaInfo';
+import { CcaSignup } from '@/v2/models/ccaSignup';
+import { Server } from '@/v2/models/server';
 
 const schema = {
   response: {

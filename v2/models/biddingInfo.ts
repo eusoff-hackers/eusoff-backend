@@ -1,4 +1,5 @@
-import { Types, Document, Schema, model } from 'mongoose';
+import type { Types, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import './jersey';
 
 interface iBiddingInfo extends Document {

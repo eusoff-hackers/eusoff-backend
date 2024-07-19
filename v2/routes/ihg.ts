@@ -1,8 +1,8 @@
-import { FastifyInstance } from 'fastify';
-import { matches } from '../controllers/ihg/matches';
-import { points } from '../controllers/ihg/points';
-import { sports } from '../controllers/ihg/sports';
-import { placements } from '../controllers/ihg/placements';
+import type { FastifyInstance } from 'fastify';
+import { matches } from '@/v2/controllers/ihg/matches';
+import { points } from '@/v2/controllers/ihg/points';
+import { sports } from '@/v2/controllers/ihg/sports';
+import { placements } from '@/v2/controllers/ihg/placements';
 import admin from './ihg/admin';
 
 export default async (fastify: FastifyInstance) => {

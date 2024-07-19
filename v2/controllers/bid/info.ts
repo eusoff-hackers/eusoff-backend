@@ -1,10 +1,10 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { BiddingInfo } from '../../models/biddingInfo';
-import { Bid } from '../../models/bid';
-import { success, resBuilder, sendError } from '../../utils/req_handler';
-import { logAndThrow, reportError } from '../../utils/logger';
-import { auth } from '../../utils/auth';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import { BiddingInfo } from '@/v2/models/biddingInfo';
+import { Bid } from '@/v2/models/bid';
+import { success, resBuilder, sendError } from '@/v2/utils/req_handler';
+import { logAndThrow, reportError } from '@/v2/utils/logger';
+import { auth } from '@/v2/utils/auth';
 
 const schema = {
   response: {

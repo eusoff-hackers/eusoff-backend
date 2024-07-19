@@ -1,9 +1,9 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { getEligible } from '../../utils/jersey';
-import { success, sendError, resBuilder } from '../../utils/req_handler';
-import { reportError } from '../../utils/logger';
-import { auth } from '../../utils/auth';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import { getEligible } from '@/v2/utils/jersey';
+import { success, sendError, resBuilder } from '@/v2/utils/req_handler';
+import { reportError } from '@/v2/utils/logger';
+import { auth } from '@/v2/utils/auth';
 
 const schema = {
   response: {

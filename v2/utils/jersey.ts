@@ -1,11 +1,14 @@
-import { BiddingInfo, iBiddingInfo } from '../models/biddingInfo';
-import { iJersey, Jersey } from '../models/jersey';
-import { Member } from '../models/member';
-import { JerseyBan } from '../models/jerseyBan';
-import { Server, iServer } from '../models/server';
-import { iUser } from '../models/user';
+import type { iBiddingInfo } from '@/v2/models/biddingInfo';
+import { BiddingInfo } from '@/v2/models/biddingInfo';
+import type { iJersey } from '@/v2/models/jersey';
+import { Jersey } from '@/v2/models/jersey';
+import { Member } from '@/v2/models/member';
+import { JerseyBan } from '@/v2/models/jerseyBan';
+import type { iServer } from '@/v2/models/server';
+import { Server } from '@/v2/models/server';
+import type { iUser } from '@/v2/models/user';
 import { logAndThrow, logger, reportError } from './logger';
-import { MongoSession } from './mongoSession';
+import type { MongoSession } from './mongoSession';
 
 async function checkUser(user: iUser, session: MongoSession): Promise<boolean> {
   try {

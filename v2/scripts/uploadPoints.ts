@@ -8,8 +8,9 @@
 import { parse } from 'csv-parse';
 import * as fs from 'fs';
 import mongoose from 'mongoose';
-import { User } from '../models/user';
-import { RoomBidInfo, iRoomBidInfo } from '../models/roomBidInfo';
+import { User } from '@/v2/models/user';
+import type { iRoomBidInfo } from '@/v2/models/roomBidInfo';
+import { RoomBidInfo } from '@/v2/models/roomBidInfo';
 
 const DISTRIBUTIONS = [
   'External CCA',

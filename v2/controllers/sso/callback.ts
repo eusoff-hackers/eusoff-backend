@@ -1,11 +1,11 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { OIDCAuthzResponsePayload } from '@boxyhq/saml-jackson';
-import { sendStatus, sendError } from '../../utils/req_handler';
-import { oauthController } from '../../utils/sso';
-import { reportError, logEvent } from '../../utils/logger';
-import { User } from '../../models/user';
-import * as auth from '../../utils/auth';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import type { OIDCAuthzResponsePayload } from '@boxyhq/saml-jackson';
+import { sendStatus, sendError } from '@/v2/utils/req_handler';
+import { oauthController } from '@/v2/utils/sso';
+import { reportError, logEvent } from '@/v2/utils/logger';
+import { User } from '@/v2/models/user';
+import * as auth from '@/v2/utils/auth';
 
 async function handler(
   req: FastifyRequest<{ Querystring: OIDCAuthzResponsePayload }>,

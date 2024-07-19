@@ -1,8 +1,8 @@
 const { env } = process;
 import mongoose from 'mongoose';
-import { IhgPlacement } from '../models/ihgPlacement';
-import { IhgSport } from '../models/ihgSport';
-import { Hall } from '../models/hall';
+import { IhgPlacement } from '@/v2/models/ihgPlacement';
+import { IhgSport } from '@/v2/models/ihgSport';
+import { Hall } from '@/v2/models/hall';
 
 async function run() {
   await mongoose.connect(env.MONGO_URI);

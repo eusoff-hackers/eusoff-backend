@@ -1,12 +1,13 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { FromSchema } from 'json-schema-to-ts';
-import { isEligible } from '../../utils/jersey';
-import { reportError, logEvent } from '../../utils/logger';
-import { sendError, sendStatus } from '../../utils/req_handler';
-import { auth } from '../../utils/auth';
-import { Jersey, iJersey } from '../../models/jersey';
-import { Bid } from '../../models/bid';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import type { FromSchema } from 'json-schema-to-ts';
+import { isEligible } from '@/v2/utils/jersey';
+import { reportError, logEvent } from '@/v2/utils/logger';
+import { sendError, sendStatus } from '@/v2/utils/req_handler';
+import { auth } from '@/v2/utils/auth';
+import type { iJersey } from '@/v2/models/jersey';
+import { Jersey } from '@/v2/models/jersey';
+import { Bid } from '@/v2/models/bid';
 
 const schema = {
   body: {

@@ -1,8 +1,8 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { reportError } from '../../utils/logger';
-import { sendError } from '../../utils/req_handler';
-import { oauthController } from '../../utils/sso';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import { reportError } from '@/v2/utils/logger';
+import { sendError } from '@/v2/utils/req_handler';
+import { oauthController } from '@/v2/utils/sso';
 
 async function handler(req: FastifyRequest, res: FastifyReply) {
   try {

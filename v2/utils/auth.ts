@@ -1,8 +1,9 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { iUser, User } from '../models/user';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import type { iUser } from '@/v2/models/user';
+import { User } from '@/v2/models/user';
 import { sendStatus } from './req_handler';
 import { reportError, logger } from './logger';
-import { MongoSession } from './mongoSession';
+import type { MongoSession } from './mongoSession';
 
 declare module 'fastify' {
   interface Session {

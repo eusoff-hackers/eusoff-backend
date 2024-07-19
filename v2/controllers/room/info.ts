@@ -1,10 +1,16 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server as httpServer, ServerResponse } from 'http';
-import { iRoomBidInfo, RoomBidInfo } from '../../models/roomBidInfo';
-import { iServer, Server } from '../../models/server';
-import { success, resBuilder, sendError } from '../../utils/req_handler';
-import { logAndThrow, reportError } from '../../utils/logger';
-import { auth } from '../../utils/auth';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type {
+  IncomingMessage,
+  Server as httpServer,
+  ServerResponse,
+} from 'http';
+import type { iRoomBidInfo } from '@/v2/models/roomBidInfo';
+import { RoomBidInfo } from '@/v2/models/roomBidInfo';
+import type { iServer } from '@/v2/models/server';
+import { Server } from '@/v2/models/server';
+import { success, resBuilder, sendError } from '@/v2/utils/req_handler';
+import { logAndThrow, reportError } from '@/v2/utils/logger';
+import { auth } from '@/v2/utils/auth';
 
 const schema = {
   response: {

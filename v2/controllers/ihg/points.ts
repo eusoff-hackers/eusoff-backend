@@ -1,10 +1,10 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { success, resBuilder, sendError } from '../../utils/req_handler';
-import { reportError, logAndThrow } from '../../utils/logger';
-import { IhgPlacement } from '../../models/ihgPlacement';
-import { Hall } from '../../models/hall';
-import { setCache, checkCache } from '../../utils/cache_handler';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import { success, resBuilder, sendError } from '@/v2/utils/req_handler';
+import { reportError, logAndThrow } from '@/v2/utils/logger';
+import { IhgPlacement } from '@/v2/models/ihgPlacement';
+import { Hall } from '@/v2/models/hall';
+import { setCache, checkCache } from '@/v2/utils/cache_handler';
 
 const POINTS_REWARD = {
   carnival: [0, 6, 5, 4, 3, 2, 1],

@@ -1,4 +1,5 @@
-import { controllers, IOAuthController } from '@boxyhq/saml-jackson';
+import type { IOAuthController } from '@boxyhq/saml-jackson';
+import { controllers } from '@boxyhq/saml-jackson';
 import * as fs from 'fs';
 import { reportError, logger } from './logger';
 

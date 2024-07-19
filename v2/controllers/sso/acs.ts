@@ -1,9 +1,9 @@
-import { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
-import { IncomingMessage, Server, ServerResponse } from 'http';
-import { SAMLResponsePayload } from '@boxyhq/saml-jackson';
-import { oauthController } from '../../utils/sso';
-import { reportError } from '../../utils/logger';
-import { sendError } from '../../utils/req_handler';
+import type { FastifyRequest, FastifyReply, RouteOptions } from 'fastify';
+import type { IncomingMessage, Server, ServerResponse } from 'http';
+import type { SAMLResponsePayload } from '@boxyhq/saml-jackson';
+import { oauthController } from '@/v2/utils/sso';
+import { reportError } from '@/v2/utils/logger';
+import { sendError } from '@/v2/utils/req_handler';
 
 async function handler(
   req: FastifyRequest<{ Body: SAMLResponsePayload }>,
