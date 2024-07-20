@@ -1,5 +1,5 @@
 import { User } from "@/v2/models/user";
-import { auth } from "@/v2/utils/auth";
+import { auth } from "@/v2/plugins/auth";
 import { reportError } from "@/v2/utils/logger";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";
 import bcrypt from "bcryptjs";

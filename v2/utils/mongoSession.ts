@@ -1,5 +1,4 @@
 import { logger, reportError } from "./logger";
-import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ClientSession } from "mongoose";
 import mongoose from "mongoose";
 
@@ -59,13 +58,4 @@ class MongoSession {
   }
 }
 
-async function addSession(fastify: FastifyInstance) {
-  fastify.addHook(`preHandler`, async (req: FastifyRequest) => {
-    const session = new MongoSession();
-    await session.start();
-    req.session.set(`session`, session);
-    return req.session.save();
-  });
-}
-
-export { MongoSession, addSession };
+export { MongoSession };

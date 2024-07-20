@@ -2,7 +2,7 @@ import { Hall } from "@/v2/models/hall";
 import type { iIhgPlacement } from "@/v2/models/ihgPlacement";
 import { IhgPlacement } from "@/v2/models/ihgPlacement";
 import { IhgSport } from "@/v2/models/ihgSport";
-import { admin } from "@/v2/utils/auth";
+import { admin } from "@/v2/plugins/auth";
 import { logAndThrow, logEvent, reportError } from "@/v2/utils/logger";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";

@@ -1,7 +1,7 @@
 import { RoomBid } from "@/v2/models/roomBid";
 import { RoomBidInfo, type iRoomBidInfo } from "@/v2/models/roomBidInfo";
 import { Server, type iServer } from "@/v2/models/server";
-import { auth } from "@/v2/utils/auth";
+import { auth } from "@/v2/plugins/auth";
 import { logAndThrow, reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
 import { isEligible } from "@/v2/utils/room";

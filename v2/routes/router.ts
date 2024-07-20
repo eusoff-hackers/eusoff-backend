@@ -8,7 +8,7 @@ import sso from "./sso";
 import team from "./team";
 import user from "./user";
 import { addSchemas } from "@/v2/models/fastify-schemas";
-import { addSession } from "@/v2/utils/mongoSession";
+import { addSession } from "@/v2/plugins/addSession";
 import { success } from "@/v2/utils/req_handler";
 import type { FastifyInstance } from "fastify";
 

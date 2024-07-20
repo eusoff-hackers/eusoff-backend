@@ -4,7 +4,7 @@ import { CcaInfo } from "@/v2/models/ccaInfo";
 import type { iCcaInfo } from "@/v2/models/ccaInfo";
 import { CcaSignup } from "@/v2/models/ccaSignup";
 import { Server } from "@/v2/models/server";
-import { auth } from "@/v2/utils/auth";
+import { auth } from "@/v2/plugins/auth";
 import { logEvent, reportError } from "@/v2/utils/logger";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
