@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-shadow */
-import fastify, { FastifyRequest, FastifyInstance } from 'fastify';
+import type { FastifyInstance } from "fastify";
 
-declare module 'fastify' {
+declare module "fastify" {
   export interface FastifyRequest {
     fastify?: FastifyInstance;
   }
