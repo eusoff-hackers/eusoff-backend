@@ -1,14 +1,14 @@
-import bid from "./bid";
-import cca from "./cca";
-import hall from "./hall";
-import ihg from "./ihg";
-import jersey from "./jersey";
-import room from "./room";
-import sso from "./sso";
-import team from "./team";
-import user from "./user";
 import { addSchemas } from "@/v2/models/fastify-schemas";
 import { addSession } from "@/v2/plugins/addSession";
+import bid from "@/v2/routes/bid";
+import cca from "@/v2/routes/cca";
+import hall from "@/v2/routes/hall";
+import ihg from "@/v2/routes/ihg";
+import jersey from "@/v2/routes/jersey";
+import room from "@/v2/routes/room";
+import sso from "@/v2/routes/sso";
+import team from "@/v2/routes/team";
+import user from "@/v2/routes/user";
 import { success } from "@/v2/utils/req_handler";
 import type { FastifyInstance } from "fastify";
 

@@ -1,22 +1,22 @@
-import { rBid } from "./bid";
-import { rBiddingInfo } from "./biddingInfo";
-import { rCca } from "./cca";
-import { rCcaInfo } from "./ccaInfo";
-import { rCcaSignup } from "./ccaSignup";
-import { rHall } from "./hall";
-import { rIhgMatch } from "./ihgMatch";
-import { rIhgPlacement } from "./ihgPlacement";
-import { rIhgPoint } from "./ihgPoint";
-import { rIhgSport } from "./ihgSport";
-import { rJersey } from "./jersey";
-import { rRoom } from "./room";
-import { rRoomBid } from "./roomBid";
-import { rRoomBidInfo } from "./roomBidInfo";
-import { rRoomBlock } from "./roomBlock";
-import { rTeam } from "./team";
+import { rBid } from "@/v2/models/bid";
+import { rBiddingInfo } from "@/v2/models/biddingInfo";
+import { rCca } from "@/v2/models/cca";
+import { rCcaInfo } from "@/v2/models/ccaInfo";
+import { rCcaSignup } from "@/v2/models/ccaSignup";
+import { rHall } from "@/v2/models/hall";
+import { rIhgMatch } from "@/v2/models/ihgMatch";
+import { rIhgPlacement } from "@/v2/models/ihgPlacement";
+import { rIhgPoint } from "@/v2/models/ihgPoint";
+import { rIhgSport } from "@/v2/models/ihgSport";
+import { rJersey } from "@/v2/models/jersey";
+import { rRoom } from "@/v2/models/room";
+import { rRoomBid } from "@/v2/models/roomBid";
+import { rRoomBidInfo } from "@/v2/models/roomBidInfo";
+import { rRoomBlock } from "@/v2/models/roomBlock";
+import { rTeam } from "@/v2/models/team";
 
 /* eslint-disable global-require */
-import { rUser } from "./user";
+import { rUser } from "@/v2/models/user";
 import type { FastifyInstance } from "fastify";
 
 async function addSchemas(fastify: FastifyInstance) {

@@ -1,5 +1,5 @@
-import type { MongoSession } from "./mongoSession";
 import { EventLog } from "@/v2/models/eventLog";
+import type { MongoSession } from "@/v2/utils/mongoSession";
 import { Types } from "mongoose";
 import winston from "winston";
 import { MongoDB } from "winston-mongodb";

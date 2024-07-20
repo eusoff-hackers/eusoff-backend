@@ -1,5 +1,5 @@
-import type { iUser } from "./user";
 import type { iRoom } from "@/v2/models/room";
+import type { iUser } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
 

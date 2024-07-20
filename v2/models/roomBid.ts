@@ -1,6 +1,6 @@
-import type { iRoomBidInfo } from "./roomBidInfo";
-import type { iUser } from "./user";
 import type { iRoom } from "@/v2/models/room";
+import type { iRoomBidInfo } from "@/v2/models/roomBidInfo";
+import type { iUser } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
 

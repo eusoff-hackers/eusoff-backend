@@ -1,5 +1,3 @@
-import { logAndThrow, logger, reportError } from "./logger";
-import type { MongoSession } from "./mongoSession";
 import type { iBiddingInfo } from "@/v2/models/biddingInfo";
 import { BiddingInfo } from "@/v2/models/biddingInfo";
 import type { iJersey } from "@/v2/models/jersey";
@@ -9,6 +7,8 @@ import { Member } from "@/v2/models/member";
 import type { iServer } from "@/v2/models/server";
 import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
+import { logAndThrow, logger, reportError } from "@/v2/utils/logger";
+import type { MongoSession } from "@/v2/utils/mongoSession";
 
 async function checkUser(user: iUser, session: MongoSession): Promise<boolean> {
   try {

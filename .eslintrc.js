@@ -39,7 +39,7 @@ module.exports = {
       },
     ],
 
-    "no-relative-import-paths/no-relative-import-paths": ["error", { allowSameFolder: true, prefix: "@" }],
+    "no-relative-import-paths/no-relative-import-paths": ["error", { prefix: "@" }],
     "import/no-dynamic-require": 0,
     "no-underscore-dangle": ["error", { allow: ["_id"] }],
 
