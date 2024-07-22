@@ -14,14 +14,6 @@ interface Data {
   committees: string;
 }
 
-interface uploadCca {
-  name: string;
-  category: string;
-  heads: string[];
-  contacts: string[];
-  description: string;
-}
-
 function convert(s: string): string[] {
   return s.split(`, `);
 }
