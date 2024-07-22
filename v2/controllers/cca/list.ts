@@ -1,4 +1,4 @@
-import { Cca } from "@/v2/models/cca";
+import { Cca } from "@/v2/models/cca/cca";
 import { reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";

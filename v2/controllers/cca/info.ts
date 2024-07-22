@@ -1,5 +1,5 @@
-import { CcaInfo } from "@/v2/models/ccaInfo";
-import { CcaSignup } from "@/v2/models/ccaSignup";
+import { CcaInfo } from "@/v2/models/cca/ccaInfo";
+import { CcaSignup } from "@/v2/models/cca/ccaSignup";
 import { Server } from "@/v2/models/server";
 import { auth } from "@/v2/plugins/auth";
 import { logAndThrow, reportError } from "@/v2/utils/logger";

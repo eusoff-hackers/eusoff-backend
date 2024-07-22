@@ -1,8 +1,8 @@
-import { Cca } from "@/v2/models/cca";
-import type { iCca } from "@/v2/models/cca";
-import { CcaInfo } from "@/v2/models/ccaInfo";
-import type { iCcaInfo } from "@/v2/models/ccaInfo";
-import { CcaSignup } from "@/v2/models/ccaSignup";
+import { Cca } from "@/v2/models/cca/cca";
+import type { iCca } from "@/v2/models/cca/cca";
+import { CcaInfo } from "@/v2/models/cca/ccaInfo";
+import type { iCcaInfo } from "@/v2/models/cca/ccaInfo";
+import { CcaSignup } from "@/v2/models/cca/ccaSignup";
 import { Server } from "@/v2/models/server";
 import { auth } from "@/v2/plugins/auth";
 import { logEvent, reportError } from "@/v2/utils/logger";

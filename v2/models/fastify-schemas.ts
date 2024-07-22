@@ -1,8 +1,8 @@
 import { rBid } from "@/v2/models/bid";
 import { rBiddingInfo } from "@/v2/models/biddingInfo";
-import { rCca } from "@/v2/models/cca";
-import { rCcaInfo } from "@/v2/models/ccaInfo";
-import { rCcaSignup } from "@/v2/models/ccaSignup";
+import { rCca } from "@/v2/models/cca/cca";
+import { rCcaInfo } from "@/v2/models/cca/ccaInfo";
+import { rCcaSignup } from "@/v2/models/cca/ccaSignup";
 import { rHall } from "@/v2/models/hall";
 import { rIhgMatch } from "@/v2/models/ihgMatch";
 import { rIhgPlacement } from "@/v2/models/ihgPlacement";
