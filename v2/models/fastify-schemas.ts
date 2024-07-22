@@ -3,6 +3,7 @@ import { rBiddingInfo } from "@/v2/models/biddingInfo";
 import { rCca } from "@/v2/models/cca/cca";
 import { rCcaInfo } from "@/v2/models/cca/ccaInfo";
 import { rCcaSignup } from "@/v2/models/cca/ccaSignup";
+import { rCcaSubcommittee } from "@/v2/models/cca/ccaSubcommittee";
 import { rHall } from "@/v2/models/hall";
 import { rIhgMatch } from "@/v2/models/ihgMatch";
 import { rIhgPlacement } from "@/v2/models/ihgPlacement";
@@ -25,6 +26,7 @@ async function addSchemas(fastify: FastifyInstance) {
   await fastify.addSchema(rBiddingInfo);
   await fastify.addSchema(rJersey);
   await fastify.addSchema(rBid);
+  await fastify.addSchema(rCcaSubcommittee);
   await fastify.addSchema(rCca);
   await fastify.addSchema(rCcaInfo);
   await fastify.addSchema(rCcaSignup);

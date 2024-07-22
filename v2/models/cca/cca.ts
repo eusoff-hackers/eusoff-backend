@@ -27,21 +27,25 @@ const rCca = {
       items: { type: `string` },
     },
     description: { type: `string` },
+    subcommittees: { type: `array`, items: { $ref: `ccaSubcommittee` } },
   },
   additionalProperties: false,
 };
 
-const ccaSchema = new Schema<iCca>({
-  name: { type: String, required: true, index: 1 },
-  category: { type: String },
-  heads: {
-    type: [String],
+const ccaSchema = new Schema<iCca>(
+  {
+    name: { type: String, required: true, index: 1 },
+    category: { type: String },
+    heads: {
+      type: [String],
+    },
+    contacts: {
+      type: [String],
+    },
+    description: { type: String },
   },
-  contacts: {
-    type: [String],
-  },
-  description: { type: String },
-});
+  { toObject: { virtuals: true }, toJSON: { virtuals: true } },
+);
 
 ccaSchema.virtual(`subcommittees`, {
   ref: `CcaSubcommittee`,
