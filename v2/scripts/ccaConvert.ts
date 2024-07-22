@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import { Cca } from "@/v2/models/cca";
+import { Cca } from "@/v2/models/cca/cca";
+import { CcaSubcommittee } from "@/v2/models/cca/ccaSubcommittee";
 import { parse } from "csv-parse";
 import * as fs from "fs";
 import mongoose from "mongoose";
@@ -19,7 +20,6 @@ interface uploadCca {
   heads: string[];
   contacts: string[];
   description: string;
-  committees: string[];
 }
 
 function convert(s: string): string[] {
@@ -38,20 +38,25 @@ async function run() {
       columns: true,
     },
     async (error, result: Data[]) => {
-      const converted: uploadCca[] = result.map((x) => ({
-        name: x.name,
-        category: x.category,
-        heads: convert(x.heads),
-        contacts: convert(x.contacts),
-        description: x.description,
-        committees: convert(x.committees),
-      }));
+      // eslint-disable-next-line promise/no-promise-in-callback
+      await Promise.all(
+        result.map(async (x) => {
+          const committees = convert(x.committees);
+          const cca = await Cca.create({
+            name: x.name,
+            category: x.category,
+            heads: convert(x.heads),
+            contacts: convert(x.contacts),
+            description: x.description,
+          });
+          await CcaSubcommittee.create(committees.filter((c) => c !== "").map((c) => ({ name: c, cca })));
+        }),
+      );
 
-      await Cca.create(converted);
+      // await Cca.create(converted);
       console.log(`Finished.`);
     },
   );
-  console.log(`Finished.`);
 }
 
 run();

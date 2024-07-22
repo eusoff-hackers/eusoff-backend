@@ -8,7 +8,6 @@ interface iCca extends Document {
   heads: string[];
   contacts: string[];
   description: string;
-  committees: string[];
 }
 
 const rCca = {
@@ -28,10 +27,6 @@ const rCca = {
       items: { type: `string` },
     },
     description: { type: `string` },
-    committees: {
-      type: `array`,
-      items: { type: `string` },
-    },
   },
   additionalProperties: false,
 };
@@ -46,9 +41,12 @@ const ccaSchema = new Schema<iCca>({
     type: [String],
   },
   description: { type: String },
-  committees: {
-    type: [String],
-  },
+});
+
+ccaSchema.virtual(`subcommittees`, {
+  ref: `CcaSubcommittee`,
+  localField: `_id`,
+  foreignField: `cca`,
 });
 
 const Cca = model<iCca>(`Cca`, ccaSchema);

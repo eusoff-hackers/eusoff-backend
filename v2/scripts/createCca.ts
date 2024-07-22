@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { Cca } from "@/v2/models/cca";
+import { Cca } from "@/v2/models/cca/cca";
 import mongoose from "mongoose";
 
 const { env } = process;
