@@ -35,7 +35,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
 
     const p = await Promise.allSettled([
       CcaInfo.findOne({ user: user._id }).session(session.session),
-      CcaSignup.find({ user: user._id }).populate(`cca`).session(session.session),
+      CcaSignup.find({ user: user._id }).populate(`cca`).populate(`subcommittees`).session(session.session),
     ]);
     const info = logAndThrow([p[0]], `Cca info retrieval error`)[0] || {
       name: null,
