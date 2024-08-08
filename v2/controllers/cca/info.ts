@@ -15,13 +15,14 @@ const schema = {
         info: {
           $ref: `ccaInfo`,
         },
-        ccas: {
+        signups: {
           type: `array`,
           items: {
-            $ref: `cca`,
+            $ref: `ccaSignup`,
           },
         },
         isOpen: { type: `boolean` },
+        openTime: { type: `number` },
       },
     }),
   },
@@ -41,11 +42,11 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
       telegram: null,
       email: null,
     };
-    const ccas = logAndThrow([p[1]], `CcaSignups parse error`)[0].map((c) => c.cca);
+    const signups = logAndThrow([p[1]], `CcaSignups parse error`)[0];
 
     const isOpen = (await Server.findOne({ key: `ccaOpen` }).session(session.session))?.value;
 
-    return await success(res, { info, ccas, isOpen });
+    return await success(res, { info, signups, isOpen });
   } catch (error) {
     reportError(error, `Bid Info handler error`);
     return sendError(res);
