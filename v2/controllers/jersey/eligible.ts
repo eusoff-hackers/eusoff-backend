@@ -1,4 +1,4 @@
-import { auth } from "@/v2/utils/auth";
+import { auth } from "@/v2/plugins/auth";
 import { getEligible } from "@/v2/utils/jersey";
 import { reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";

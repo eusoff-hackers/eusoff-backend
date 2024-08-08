@@ -1,6 +1,6 @@
 import { Server } from "@/v2/models/server";
 import { User } from "@/v2/models/user";
-import * as auth from "@/v2/utils/auth";
+import * as auth from "@/v2/plugins/auth";
 import { logEvent, reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, sendStatus, success } from "@/v2/utils/req_handler";
 import * as bcrypt from "bcryptjs";

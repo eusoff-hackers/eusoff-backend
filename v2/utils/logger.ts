@@ -1,7 +1,8 @@
-import type { MongoSession } from "./mongoSession";
 import { EventLog } from "@/v2/models/eventLog";
+import type { MongoSession } from "@/v2/utils/mongoSession";
 import { Types } from "mongoose";
 import winston from "winston";
+import { MongoDB } from "winston-mongodb";
 
 const { env } = process;
 const LOG_LEVEL: `production` | `warn` | `info` = env.NODE_ENV === "production" ? "warn" : "info";
@@ -21,7 +22,7 @@ const logger = winston.createLogger({
       filename: "combined.log",
       format: format.combine(format.timestamp(), format.json()),
     }),
-    new transports.MongoDB({ level: LOG_LEVEL, db: env.MONGO_URI }),
+    new MongoDB({ level: LOG_LEVEL, db: env.MONGO_URI }),
   ],
 });
 

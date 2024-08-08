@@ -1,6 +1,7 @@
 import { Room } from "@/v2/models/room";
 import { RoomBid } from "@/v2/models/roomBid";
 import { RoomBlock } from "@/v2/models/roomBlock";
+import { checkCache, setCache } from "@/v2/utils/cache_handler";
 import { logAndThrow, reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
@@ -70,7 +71,9 @@ const list: RouteOptions<Server, IncomingMessage, ServerResponse, Record<string,
   method: `GET`,
   url: `/list`,
   schema,
+  preHandler: checkCache,
   handler,
+  onSend: setCache,
 };
 
 export { list };

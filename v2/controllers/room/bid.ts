@@ -5,7 +5,7 @@ import { RoomBidInfo } from "@/v2/models/roomBidInfo";
 import { RoomBlock } from "@/v2/models/roomBlock";
 import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
-import { auth } from "@/v2/utils/auth";
+import { auth } from "@/v2/plugins/auth";
 import { logAndThrow, logEvent, reportError } from "@/v2/utils/logger";
 import { mail } from "@/v2/utils/mailer";
 import type { MongoSession } from "@/v2/utils/mongoSession";
