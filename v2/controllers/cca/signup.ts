@@ -90,15 +90,15 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
 
     const newSignups = req.body.signups.map((c) => ({ user: user._id, ...c }));
 
-    await CcaSignup.deleteMany({ user: user._id }).session(session.session);
-    await CcaInfo.deleteOne({ user: user._id }).session(session.session);
-
-    await CcaSignup.create(newSignups, { session: session.session });
-    await CcaInfo.create([info], { session: session.session });
-
-    await logEvent(`USER SIGNUP CCA`, session, JSON.stringify({ signups: newSignups, info }), user._id);
-
     try {
+      await CcaSignup.deleteMany({ user: user._id }).session(session.session);
+      await CcaInfo.deleteOne({ user: user._id }).session(session.session);
+
+      await CcaSignup.create(newSignups, { session: session.session });
+      await CcaInfo.create([info], { session: session.session });
+
+      await logEvent(`USER SIGNUP CCA`, session, JSON.stringify({ signups: newSignups, info }), user._id);
+
       await session.commit();
     } catch (error) {
       reportError(error, `CCA signup transaction commit error.`);

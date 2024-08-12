@@ -26,7 +26,13 @@ const rCcaSignup = {
 const ccaSignupSchema = new Schema<iCcaSignup>({
   user: { type: Schema.Types.ObjectId, required: true, ref: `User`, index: 1 },
   cca: { type: Schema.Types.ObjectId, required: true, ref: `Cca` },
-  reason: { type: Schema.Types.String, required: true, maxlength: 500 },
+  reason: {
+    type: Schema.Types.String,
+    maxlength: 500,
+    required: function () {
+      return typeof this.reason === "string" ? false : true;
+    },
+  },
   subcommittees: [{ type: Schema.Types.ObjectId, ref: `CcaSubcommittee` }],
 });
 
