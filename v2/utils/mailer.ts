@@ -1,5 +1,5 @@
-import { logEvent, logger, reportError } from "./logger";
-import type { MongoSession } from "./mongoSession";
+import { logEvent, logger, reportError } from "@/v2/utils/logger";
+import type { MongoSession } from "@/v2/utils/mongoSession";
 import type { Types } from "mongoose";
 import nodemailer from "nodemailer";
 

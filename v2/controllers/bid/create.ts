@@ -1,7 +1,7 @@
 import { Bid } from "@/v2/models/bid";
 import type { iJersey } from "@/v2/models/jersey";
 import { Jersey } from "@/v2/models/jersey";
-import { auth } from "@/v2/utils/auth";
+import { auth } from "@/v2/plugins/auth";
 import { isEligible } from "@/v2/utils/jersey";
 import { logEvent, reportError } from "@/v2/utils/logger";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";

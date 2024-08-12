@@ -43,6 +43,8 @@ const jacksonOptions = {
   } catch (error) {
     reportError(error, `SSO initialization error.`);
   }
-})();
+});
+
+// init();
 
 export { oauthController, apiController };

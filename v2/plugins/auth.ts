@@ -1,9 +1,9 @@
-import { logger, reportError } from "./logger";
-import type { MongoSession } from "./mongoSession";
-import { sendStatus } from "./req_handler";
 import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
 import { User } from "@/v2/models/user";
+import { logger, reportError } from "@/v2/utils/logger";
+import type { MongoSession } from "@/v2/utils/mongoSession";
+import { sendStatus } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 declare module "fastify" {

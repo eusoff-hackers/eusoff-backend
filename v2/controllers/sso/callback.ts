@@ -1,5 +1,5 @@
 import { User } from "@/v2/models/user";
-import * as auth from "@/v2/utils/auth";
+import * as auth from "@/v2/plugins/auth";
 import { logEvent, reportError } from "@/v2/utils/logger";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";
 import { oauthController } from "@/v2/utils/sso";

@@ -1,5 +1,5 @@
-import "./jersey";
-import "./team";
+import "@/v2/models/jersey";
+import "@/v2/models/team";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
 

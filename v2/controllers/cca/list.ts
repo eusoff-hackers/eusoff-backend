@@ -1,4 +1,4 @@
-import { Cca } from "@/v2/models/cca";
+import { Cca } from "@/v2/models/cca/cca";
 import { reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
@@ -18,8 +18,8 @@ const schema = {
 async function handler(req: FastifyRequest, res: FastifyReply) {
   const session = req.session.get(`session`)!;
   try {
-    const cca = await Cca.find().session(session.session);
-    return await success(res, cca);
+    const ccas = await Cca.find().populate("subcommittees").session(session.session);
+    return await success(res, ccas);
   } catch (error) {
     reportError(error, `Cca list handler error`);
     return sendError(res);
