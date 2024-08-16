@@ -16,7 +16,6 @@ const rCcaSignup = {
     cca: { $ref: `cca` },
     reason: {
       type: "string",
-      maxLength: 500,
     },
     subcommittees: { type: `array`, items: { $ref: `ccaSubcommittee` } },
   },
@@ -28,7 +27,6 @@ const ccaSignupSchema = new Schema<iCcaSignup>({
   cca: { type: Schema.Types.ObjectId, required: true, ref: `Cca` },
   reason: {
     type: Schema.Types.String,
-    maxlength: 500,
     required: function () {
       return typeof this.reason === "string" ? false : true;
     },
