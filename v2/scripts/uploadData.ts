@@ -14,11 +14,12 @@ const SALT_ROUNDS = 10;
 
 interface Data {
   username: string;
-  role: string;
-  gender: string;
-  year: number;
+  // role: string;
+  // gender: string;
+  // year: number;
   room: string;
-  email: string;
+  id: string;
+  // email: string;
   password: string;
 }
 
@@ -51,7 +52,7 @@ async function hashPassword(password: string) {
       const res: iUser[] = [];
       for (const user of result) {
         user.password = await hashPassword(user.password);
-        res.push(user as iUser);
+        res.push({ ...user, year: 0, gender: "Male", id: undefined, email: `${user.id}@u.nus.edu` } as iUser);
       }
       try {
         await User.create(res, { session });
