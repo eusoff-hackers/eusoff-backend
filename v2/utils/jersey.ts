@@ -38,7 +38,7 @@ async function checkUserLegible(user: iUser, session: MongoSession): Promise<boo
       !round ||
       !bidInfo
     ) {
-      logger.error(`Check user find results are null | undefined`);
+      logger.error(`Check user   results are null | undefined`);
       throw new Error(`Some datas are null | undefined`);
     }
 
@@ -112,7 +112,7 @@ async function getEligible(user: iUser, session: MongoSession): Promise<number[]
       .session(session.session)
   ).map((ban) => ban.jersey);
 
-  const eligibleJerseys = (await Jersey.find({ _id: { $nin: banned } }))
+  const eligibleJerseys = (await Jersey.find({ _id: { $nin: banned } }).session(session.session))
     .filter((j) => j.quota[user.gender] !== 0)
     .map((jersey) => jersey.number);
 

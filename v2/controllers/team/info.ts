@@ -1,4 +1,4 @@
-import { Member } from "@/v2/models/member";
+import { Member } from "@/v2/models/jersey/member";
 import { auth } from "@/v2/plugins/auth";
 import { reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";

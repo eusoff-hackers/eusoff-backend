@@ -1,7 +1,11 @@
-import "@/v2/models/jersey";
+import { Jersey } from "@/v2/models/jersey/jersey";
+import { Member } from "@/v2/models/jersey/member";
 import type { iUser } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
+
+Jersey;
+Member;
 
 interface iJerseyBidInfo extends Document {
   user: Types.ObjectId | iUser;
@@ -20,24 +24,37 @@ const rJerseyBidInfo = {
     points: { type: `number` },
     isAllocated: { type: `boolean` },
     jersey: { $ref: `jersey` },
-    user: { $ref: `user` },
   },
   additionalProperties: false,
 };
 
-const jerseyBidInfoSchema = new Schema<iJerseyBidInfo>({
-  user: {
-    type: Schema.Types.ObjectId,
-    required: true,
-    unique: true,
-    ref: `User`,
-    index: 1,
+const jerseyBidInfoSchema = new Schema<iJerseyBidInfo>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      required: true,
+      unique: true,
+      ref: `User`,
+      index: 1,
+    },
+    round: { type: Number, required: true },
+    points: { type: Number, required: true },
+    isAllocated: { type: Boolean, required: true, default: false },
+    jersey: { type: Schema.Types.ObjectId, ref: `Jersey` },
   },
-  round: { type: Number, required: true },
-  points: { type: Number, required: true },
-  isAllocated: { type: Boolean, required: true, default: false },
-  jersey: { type: Schema.Types.ObjectId, ref: `Jersey` },
-});
+  {
+    toObject: { virtuals: true },
+    virtuals: {
+      teams: {
+        options: {
+          ref: `Member`,
+          localField: `user`,
+          foreignField: `user`,
+        },
+      },
+    },
+  },
+);
 
 const JerseyBidInfo = model<iJerseyBidInfo>(`JerseyBidInfo`, jerseyBidInfoSchema);
 

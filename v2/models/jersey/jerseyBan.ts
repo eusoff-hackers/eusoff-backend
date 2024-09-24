@@ -1,9 +1,12 @@
-import "@/v2/models/jersey";
+import { Jersey } from "@/v2/models/jersey/jersey";
 import type { iJersey } from "@/v2/models/jersey/jersey";
 import type { iTeam } from "@/v2/models/jersey/team";
-import "@/v2/models/team";
+import { Team } from "@/v2/models/jersey/team";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
+
+Jersey;
+Team;
 
 interface iJerseyBan extends Document {
   jersey: Types.ObjectId | iJersey;

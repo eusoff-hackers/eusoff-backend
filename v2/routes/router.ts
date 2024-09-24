@@ -1,6 +1,5 @@
 import { addSchemas } from "@/v2/models/fastify-schemas";
 import { addSession } from "@/v2/plugins/addSession";
-import bid from "@/v2/routes/bid";
 import cca from "@/v2/routes/cca";
 import hall from "@/v2/routes/hall";
 import ihg from "@/v2/routes/ihg";
@@ -21,7 +20,6 @@ export default async (fastify: FastifyInstance) => {
   });
   fastify.register(user, { prefix: `/user` });
   fastify.register(team, { prefix: `/team` });
-  fastify.register(bid, { prefix: `/bid` });
   fastify.register(jersey, { prefix: `/jersey` });
   fastify.register(sso, { prefix: `/sso` });
   fastify.register(cca, { prefix: `/cca` });

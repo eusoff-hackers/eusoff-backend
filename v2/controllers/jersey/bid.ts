@@ -1,6 +1,6 @@
-import { Bid } from "@/v2/models/bid";
-import type { iJersey } from "@/v2/models/jersey";
-import { Jersey } from "@/v2/models/jersey";
+import type { iJersey } from "@/v2/models/jersey/jersey";
+import { Jersey } from "@/v2/models/jersey/jersey";
+import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
 import { auth } from "@/v2/plugins/auth";
 import { isEligible } from "@/v2/utils/jersey";
 import { logEvent, reportError } from "@/v2/utils/logger";
@@ -36,7 +36,7 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
     const user = req.session.get(`user`)!;
     const jerseys = await Jersey.find({
       number: { $in: req.body.bids.map((j) => j.number) },
-    });
+    }).session(session.session);
     if (!(await isEligible(user, jerseys, session))) {
       return await sendStatus(res, 400, `Ineligible to bid requested numbers.`);
     }
@@ -47,8 +47,8 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
       priority: index,
     }));
 
-    await Bid.deleteMany({ user: user._id }).session(session.session);
-    await Bid.create(newBids, { session: session.session });
+    await JerseyBid.deleteMany({ user: user._id }).session(session.session);
+    await JerseyBid.create(newBids, { session: session.session });
 
     await logEvent(`USER PLACE BIDS`, session, JSON.stringify(newBids), user._id);
 
@@ -69,12 +69,12 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
   }
 }
 
-const create: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
+const bid: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
-  url: `/create`,
+  url: `/bid`,
   schema,
   preHandler: auth,
   handler,
 };
 
-export { create };
+export { bid };

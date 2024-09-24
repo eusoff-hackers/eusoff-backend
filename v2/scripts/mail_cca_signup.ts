@@ -4,16 +4,19 @@
 
 /* eslint-disable no-await-in-loop */
 import type { iCca } from "@/v2/models/cca/cca";
-import "@/v2/models/cca/cca";
+import { Cca } from "@/v2/models/cca/cca";
 import { CcaInfo } from "@/v2/models/cca/ccaInfo";
 import { CcaSignup } from "@/v2/models/cca/ccaSignup";
-import "@/v2/models/cca/ccaSubcommittee";
+import { CcaSubcommittee } from "@/v2/models/cca/ccaSubcommittee";
 import type { iCcaSubcommittee } from "@/v2/models/cca/ccaSubcommittee";
-import "@/v2/models/user";
 import type { iUser } from "@/v2/models/user";
 import mongoose from "mongoose";
 import nodemailer from "nodemailer";
 import { createInterface } from "readline";
+
+Cca;
+CcaSubcommittee;
+User;
 
 const transport = nodemailer.createTransport({
   host: "smtp.sendgrid.net",

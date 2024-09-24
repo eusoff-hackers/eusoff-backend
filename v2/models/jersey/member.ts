@@ -1,9 +1,12 @@
+import { Team } from "@/v2/models/jersey/team";
 import type { iTeam } from "@/v2/models/jersey/team";
-import "@/v2/models/team";
-import "@/v2/models/user";
+import { User } from "@/v2/models/user";
 import type { iUser } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
+
+Team;
+User;
 
 interface iMember extends Document {
   user: Types.ObjectId | iUser;

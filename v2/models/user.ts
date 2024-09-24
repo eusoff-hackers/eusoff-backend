@@ -1,4 +1,3 @@
-import "@/v2/models/jersey/member";
 import type { Document } from "mongoose";
 import { Schema, model } from "mongoose";
 
@@ -43,12 +42,6 @@ const userSchema = new Schema<iUser>(
   },
   { toObject: { virtuals: true } },
 );
-
-userSchema.virtual(`teams`, {
-  ref: `Member`,
-  localField: `_id`,
-  foreignField: `user`,
-});
 
 const User = model<iUser>(`User`, userSchema);
 

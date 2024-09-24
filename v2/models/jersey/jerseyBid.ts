@@ -1,9 +1,12 @@
-import "@/v2/models/jersey";
+import { Jersey } from "@/v2/models/jersey/jersey";
 import type { iJersey } from "@/v2/models/jersey/jersey";
-import "@/v2/models/user";
+import { User } from "@/v2/models/user";
 import type { iUser } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
+
+Jersey;
+User;
 
 interface iJerseyBid extends Document {
   user: Types.ObjectId | iUser;
