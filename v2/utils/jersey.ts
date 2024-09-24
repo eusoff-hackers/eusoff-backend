@@ -1,34 +1,53 @@
-import type { iBiddingInfo } from "@/v2/models/biddingInfo";
-import { BiddingInfo } from "@/v2/models/biddingInfo";
-import type { iJersey } from "@/v2/models/jersey";
-import { Jersey } from "@/v2/models/jersey";
-import { JerseyBan } from "@/v2/models/jerseyBan";
-import { Member } from "@/v2/models/member";
+import type { iJersey } from "@/v2/models/jersey/jersey";
+import { Jersey } from "@/v2/models/jersey/jersey";
+import { JerseyBan } from "@/v2/models/jersey/jerseyBan";
+import type { iJerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
+import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
+import { Member } from "@/v2/models/jersey/member";
 import type { iServer } from "@/v2/models/server";
 import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
 import { logAndThrow, logger, reportError } from "@/v2/utils/logger";
 import type { MongoSession } from "@/v2/utils/mongoSession";
 
-async function checkUser(user: iUser, session: MongoSession): Promise<boolean> {
+/**
+ * Check if a user is eligible to make/edit their bids
+ *
+ * @param user The user in question
+ * @param session Mandatory transaction session
+ * @returns whether or not the user is eligible to make/edit their bids
+ */
+async function checkUserLegible(user: iUser, session: MongoSession): Promise<boolean> {
   try {
-    const [bidOpen, round, bidInfo]: [iServer | null, iServer | null, iBiddingInfo | null] = logAndThrow<
-      iServer | iBiddingInfo | null
-    >(
-      await Promise.allSettled([
-        Server.findOne({ key: `bidOpen` }).session(session.session),
-        Server.findOne({ key: `biddingRound` }).session(session.session),
-        BiddingInfo.findOne({ user: user._id }).session(session.session),
-      ]),
-      `Getting server config error`,
-    ) as [iServer | null, iServer | null, iBiddingInfo | null];
+    const [bidOpen, bidClose, round, bidInfo]: [iServer | null, iServer | null, iServer | null, iJerseyBidInfo | null] =
+      logAndThrow<iServer | iJerseyBidInfo | null>(
+        await Promise.allSettled([
+          Server.findOne({ key: `jerseyBidOpen` }).session(session.session),
+          Server.findOne({ key: `jerseyBidClose` }).session(session.session),
+          Server.findOne({ key: `jerseyBidRound` }).session(session.session),
+          JerseyBidInfo.findOne({ user: user._id }).session(session.session),
+        ]),
+        `Getting server config error`,
+      ) as [iServer | null, iServer | null, iServer | null, iJerseyBidInfo | null];
 
-    if (!bidOpen || !round || !bidInfo) {
+    if (
+      !bidOpen ||
+      !(typeof bidOpen.value === "number") ||
+      !bidClose ||
+      !(typeof bidClose.value === "number") ||
+      !round ||
+      !bidInfo
+    ) {
       logger.error(`Check user find results are null | undefined`);
       throw new Error(`Some datas are null | undefined`);
     }
 
-    if (bidInfo.round > (round.value as number) || (bidOpen.value as boolean) === false || bidInfo.allocated)
+    if (
+      bidInfo.round > (round.value as number) ||
+      bidInfo.isAllocated ||
+      bidOpen.value < Date.now() ||
+      bidClose.value < Date.now()
+    )
       return false;
 
     return true;
@@ -44,9 +63,20 @@ async function getTeams(user: iUser, session: MongoSession) {
   );
 }
 
+/**
+ * Check if a user can bid for all the jerseys in `jerseys`.
+ *
+ * We try our best to optimize this function since it is the core of the operations.
+ * Do not pass non-updated jerseys or user. We assume user and jersey is correct.
+ *
+ * @param user The user in question
+ * @param jerseys The jerseys in question
+ * @param session Mandatory transaction session
+ * @returns whether or not user is eligible to bid for all jerseys
+ */
 async function isEligible(user: iUser, jerseys: iJersey[], session: MongoSession) {
   try {
-    if ((await checkUser(user, session)) === false) return false;
+    if ((await checkUserLegible(user, session)) === false) return false;
 
     const teams = await getTeams(user, session);
 
@@ -70,13 +100,17 @@ async function isEligible(user: iUser, jerseys: iJersey[], session: MongoSession
 }
 
 async function getEligible(user: iUser, session: MongoSession): Promise<number[]> {
-  if ((await checkUser(user, session)) === false) {
+  if ((await checkUserLegible(user, session)) === false) {
     return [];
   }
 
   const teams = await getTeams(user, session);
 
-  const banned = (await JerseyBan.find({ team: { $in: teams } }).session(session.session)).map((ban) => ban.jersey);
+  const banned = (
+    await JerseyBan.find({ team: { $in: teams } })
+      .lean()
+      .session(session.session)
+  ).map((ban) => ban.jersey);
 
   const eligibleJerseys = (await Jersey.find({ _id: { $nin: banned } }))
     .filter((j) => j.quota[user.gender] !== 0)
@@ -85,4 +119,4 @@ async function getEligible(user: iUser, session: MongoSession): Promise<number[]
   return eligibleJerseys;
 }
 
-export { checkUser, isEligible, getEligible };
+export { isEligible, getEligible };
