@@ -1,4 +1,4 @@
-import "@/v2/models/member";
+import "@/v2/models/jersey/member";
 import type { Document } from "mongoose";
 import { Schema, model } from "mongoose";
 

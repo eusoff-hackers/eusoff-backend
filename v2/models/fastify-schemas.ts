@@ -1,5 +1,4 @@
 import { rBid } from "@/v2/models/bid";
-import { rBiddingInfo } from "@/v2/models/biddingInfo";
 import { rCca } from "@/v2/models/cca/cca";
 import { rCcaInfo } from "@/v2/models/cca/ccaInfo";
 import { rCcaSignup } from "@/v2/models/cca/ccaSignup";
@@ -10,6 +9,7 @@ import { rIhgPlacement } from "@/v2/models/ihgPlacement";
 import { rIhgPoint } from "@/v2/models/ihgPoint";
 import { rIhgSport } from "@/v2/models/ihgSport";
 import { rJersey } from "@/v2/models/jersey";
+import { rBiddingInfo } from "@/v2/models/jersey/biddingInfo";
 import { rRoom } from "@/v2/models/room";
 import { rRoomBid } from "@/v2/models/roomBid";
 import { rRoomBidInfo } from "@/v2/models/roomBidInfo";

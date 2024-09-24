@@ -1,30 +1,31 @@
 import "@/v2/models/jersey";
+import type { iUser } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
 
-interface iBiddingInfo extends Document {
-  user?: Types.ObjectId;
+interface iJerseyBidInfo extends Document {
+  user: Types.ObjectId | iUser;
   round: number;
   points: number;
-  allocated: boolean;
+  isAllocated: boolean;
   jersey?: Types.ObjectId;
 }
 
-const rBiddingInfo = {
-  $id: `biddingInfo`,
+const rJerseyBidInfo = {
+  $id: `jerseyBidInfo`,
   type: `object`,
   required: [`round`, `points`],
   properties: {
     round: { type: `number` },
     points: { type: `number` },
-    allocated: { type: `boolean` },
+    isAllocated: { type: `boolean` },
     jersey: { $ref: `jersey` },
     user: { $ref: `user` },
   },
   additionalProperties: false,
 };
 
-const biddingInfoSchema = new Schema<iBiddingInfo>({
+const jerseyBidInfoSchema = new Schema<iJerseyBidInfo>({
   user: {
     type: Schema.Types.ObjectId,
     required: true,
@@ -34,10 +35,10 @@ const biddingInfoSchema = new Schema<iBiddingInfo>({
   },
   round: { type: Number, required: true },
   points: { type: Number, required: true },
-  allocated: { type: Boolean, required: true, default: false },
+  isAllocated: { type: Boolean, required: true, default: false },
   jersey: { type: Schema.Types.ObjectId, ref: `Jersey` },
 });
 
-const BiddingInfo = model<iBiddingInfo>(`BiddingInfo`, biddingInfoSchema);
+const JerseyBidInfo = model<iJerseyBidInfo>(`JerseyBidInfo`, jerseyBidInfoSchema);
 
-export { iBiddingInfo, BiddingInfo, rBiddingInfo };
+export { iJerseyBidInfo, JerseyBidInfo, rJerseyBidInfo };

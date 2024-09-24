@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { BiddingInfo } from "@/v2/models/biddingInfo";
+import { BiddingInfo } from "@/v2/models/jersey/biddingInfo";
 import { User } from "@/v2/models/user";
 import mongoose from "mongoose";
 
