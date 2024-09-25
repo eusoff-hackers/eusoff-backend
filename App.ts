@@ -1,24 +1,24 @@
-import { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
-import Fastify from 'fastify';
-import mongoose from 'mongoose';
-import fastifySession from '@fastify/session';
-import fastifyCookie from '@fastify/cookie';
-import MongoStore from 'connect-mongo';
-import IORedis from 'ioredis';
-import Formbody from '@fastify/formbody';
-import RedisStore from 'connect-redis';
-import { MongoClient } from 'mongodb';
-import redis from '@fastify/redis';
-import caching from '@fastify/caching';
-import cors from '@fastify/cors';
-import crypto from 'crypto';
-import v2 from './v2/routes/router';
-import { logger, reportError } from './v2/utils/logger';
+import v2 from "@/v2/routes/router";
+import { logger, reportError } from "@/v2/utils/logger";
+import caching from "@fastify/caching";
+import fastifyCookie from "@fastify/cookie";
+import cors from "@fastify/cors";
+import Formbody from "@fastify/formbody";
+import redis from "@fastify/redis";
+import fastifySession from "@fastify/session";
+import type { JsonSchemaToTsProvider } from "@fastify/type-provider-json-schema-to-ts";
+import MongoStore from "connect-mongo";
+import RedisStore from "connect-redis";
+import crypto from "crypto";
+import Fastify from "fastify";
+import IORedis from "ioredis";
+import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 
 const { env } = process;
-const LOG_LEVEL: boolean = env.NODE_ENV !== 'production';
+const LOG_LEVEL: boolean = env.NODE_ENV !== "production";
 
-const abcache = require('abstract-cache'); // eslint-disable-line @typescript-eslint/no-var-requires
+const abcache = require("abstract-cache"); // eslint-disable-line @typescript-eslint/no-var-requires
 // const v1 = require(`./v1/routes/router.js`);
 
 const secret = env.SESSION_SECRET || crypto.randomBytes(128).toString(`base64`);
@@ -29,10 +29,7 @@ const fastify = Fastify({
 
 async function run() {
   try {
-    await Promise.allSettled([
-      mongoose.connect(env.MONGO_URI),
-      fastify.listen(env.BACKEND_PORT, `0.0.0.0`),
-    ]);
+    await Promise.allSettled([mongoose.connect(env.MONGO_URI), fastify.listen(env.BACKEND_PORT, `0.0.0.0`)]);
 
     logger.info(`Connected to Atlas.`);
     logger.info(`Server started, listening to ${env.BACKEND_PORT}`);
@@ -45,12 +42,12 @@ async function run() {
 async function register() {
   try {
     fastify.register(cors, {
-      origin: env.FRONTEND_URL.split(','),
-      methods: ['GET', 'PUT', 'POST'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token'],
+      origin: env.FRONTEND_URL.split(","),
+      methods: ["GET", "PUT", "POST"],
+      allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
       credentials: true,
       maxAge: 600,
-      exposedHeaders: ['*', 'Authorization'],
+      exposedHeaders: ["*", "Authorization"],
     });
 
     fastify.register(fastifyCookie);
@@ -61,7 +58,7 @@ async function register() {
       const abcacheClient = abcache({
         useAwait: true,
         driver: {
-          name: 'abstract-cache-redis',
+          name: "abstract-cache-redis",
           options: { client: redisClient },
         },
       });
@@ -76,7 +73,7 @@ async function register() {
           ttl: 14 * 24 * 60 * 60,
         }),
         cookie: {
-          sameSite: 'none',
+          sameSite: "none",
           secure: true,
         },
       });

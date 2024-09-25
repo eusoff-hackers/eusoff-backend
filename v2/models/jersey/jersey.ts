@@ -4,8 +4,8 @@ import { Schema, model } from "mongoose";
 interface iJersey extends Document {
   number: number;
   quota: {
-    Male: number;
-    Female: number;
+    male: number;
+    female: number;
   };
 }
 
@@ -17,10 +17,10 @@ const rJersey = {
     number: { type: `number` },
     quota: {
       type: `object`,
-      required: [`Male`, `Female`],
+      required: [`male`, `female`],
       properties: {
-        Male: { type: `number` },
-        Female: { type: `number` },
+        male: { type: `number` },
+        female: { type: `number` },
       },
       additionalProperties: false,
     },
@@ -31,8 +31,8 @@ const rJersey = {
 const jerseySchema = new Schema<iJersey>({
   number: { type: Number, required: true, unique: true, index: 1 },
   quota: {
-    Male: { type: Number, required: true, default: 3 },
-    Female: { type: Number, required: false, default: 3 },
+    male: { type: Number, required: true, default: 3 },
+    female: { type: Number, required: false, default: 3 },
   },
 });
 

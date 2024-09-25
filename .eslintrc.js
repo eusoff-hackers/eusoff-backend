@@ -16,7 +16,7 @@ module.exports = {
     allowImportExportEverywhere: false,
   },
   parser: "@typescript-eslint/parser",
-  plugins: ["unused-imports", "no-relative-import-paths", "@typescript-eslint"],
+  plugins: ["unused-imports", "no-relative-import-paths", "@typescript-eslint", "import"],
   rules: {
     "@typescript-eslint/consistent-type-imports": "error",
     "unused-imports/no-unused-imports": "error",
@@ -42,7 +42,7 @@ module.exports = {
     "no-relative-import-paths/no-relative-import-paths": ["error", { prefix: "@" }],
     "import/no-dynamic-require": 0,
     "no-underscore-dangle": ["error", { allow: ["_id"] }],
-
+    "import/no-unassigned-import": "error",
     "prettier/prettier": [
       "error",
       {
@@ -58,5 +58,6 @@ module.exports = {
         extensions: [".js", ".jsx", ".ts", ".tsx"],
       },
     },
+    "import/no-unassigned-import": {},
   },
 };

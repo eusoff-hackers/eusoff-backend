@@ -7,10 +7,12 @@ const { ENABLE_EMAIL, EMAIL, EMAIL_PASSWORD } = process.env;
 const MAIL_FLAG = Boolean(ENABLE_EMAIL === "true") && Boolean(EMAIL) && Boolean(EMAIL_PASSWORD);
 
 const transport = nodemailer.createTransport({
-  service: "Outlook365",
+  host: "smtp.sendgrid.net",
+  port: 465,
+  secure: true,
   auth: {
-    user: EMAIL,
-    pass: EMAIL_PASSWORD,
+    user: "apikey",
+    pass: process.env.SENDGRID_API,
   },
 });
 

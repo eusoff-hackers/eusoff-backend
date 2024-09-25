@@ -4,13 +4,16 @@ import type { iCca } from "@/v2/models/cca/cca";
 import { CcaInfo } from "@/v2/models/cca/ccaInfo";
 import { CcaSignup } from "@/v2/models/cca/ccaSignup";
 import type { iCcaSubcommittee } from "@/v2/models/cca/ccaSubcommittee";
-import "@/v2/models/cca/ccaSubcommittee";
-import "@/v2/models/user";
+import { CcaSubcommittee } from "@/v2/models/cca/ccaSubcommittee";
+import { User } from "@/v2/models/user";
 import type { iUser } from "@/v2/models/user";
 import { logAndThrow } from "@/v2/utils/logger";
 import { writeFile } from "fs";
 import { json2csv } from "json-2-csv";
 import mongoose from "mongoose";
+
+CcaSubcommittee;
+User;
 
 async function save(cca: iCca) {
   const signups = await CcaSignup.find({ cca: cca._id }).populate<{ user: iUser }>(`user`).populate<{

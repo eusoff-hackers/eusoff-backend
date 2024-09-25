@@ -1,4 +1,3 @@
-import "@/v2/models/member";
 import type { Document } from "mongoose";
 import { Schema, model } from "mongoose";
 
@@ -7,7 +6,7 @@ interface iUser extends Document {
   password: string;
   role: `USER` | `ADMIN`;
   year: number;
-  gender: `Male` | `Female`;
+  gender: `male` | `female`;
   email: string;
   room: string;
 }
@@ -15,12 +14,11 @@ interface iUser extends Document {
 const rUser = {
   $id: `user`,
   type: `object`,
-  required: [`username`],
   properties: {
     username: { type: `string` },
     role: { type: `string`, enum: [`USER`, `ADMIN`] },
     year: { type: `number`, minimum: 0, maximum: 5 },
-    gender: { type: `string`, enum: [`Male`, `Female`] },
+    gender: { type: `string`, enum: [`male`, `female`] },
     room: { type: `string` },
   },
   additionalProperties: false,
@@ -37,18 +35,12 @@ const userSchema = new Schema<iUser>(
       required: true,
     },
     year: { type: Number, min: 0, max: 5, required: true },
-    gender: { type: String, enum: [`Male`, `Female`], required: true },
+    gender: { type: String, enum: [`male`, `female`], required: true },
     email: { type: String },
     room: { type: String, required: true },
   },
   { toObject: { virtuals: true } },
 );
-
-userSchema.virtual(`teams`, {
-  ref: `Member`,
-  localField: `_id`,
-  foreignField: `user`,
-});
 
 const User = model<iUser>(`User`, userSchema);
 

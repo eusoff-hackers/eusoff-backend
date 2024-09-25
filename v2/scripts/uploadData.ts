@@ -52,7 +52,7 @@ async function hashPassword(password: string) {
       const res: iUser[] = [];
       for (const user of result) {
         user.password = await hashPassword(user.password);
-        res.push({ ...user, year: 0, gender: "Male", id: undefined, email: `${user.id}@u.nus.edu` } as iUser);
+        res.push({ ...user, year: 0, gender: "male", id: undefined, email: `${user.id}@u.nus.edu` } as iUser);
       }
       try {
         await User.create(res, { session });
