@@ -20,6 +20,7 @@ const rJerseyBidInfo = {
   type: `object`,
   required: [`round`, `points`],
   properties: {
+    user: { $ref: `user` },
     round: { type: `number` },
     points: { type: `number` },
     isAllocated: { type: `boolean` },

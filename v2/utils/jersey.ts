@@ -119,4 +119,4 @@ async function getEligible(user: iUser, session: MongoSession): Promise<number[]
   return eligibleJerseys;
 }
 
-export { isEligible, getEligible };
+export { checkUserLegible, isEligible, getEligible };

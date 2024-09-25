@@ -21,14 +21,14 @@ const schema = {
             Male: {
               type: `array`,
               items: {
-                $ref: "biddingInfo",
+                $ref: "jerseyBidInfo",
               },
               additionalProperties: false,
             },
             Female: {
               type: `array`,
               items: {
-                $ref: "biddingInfo",
+                $ref: "jerseyBidInfo",
               },
             },
             quota: {
