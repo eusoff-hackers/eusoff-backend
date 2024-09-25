@@ -1,12 +1,13 @@
 import type { iJersey } from "@/v2/models/jersey/jersey";
 import { Jersey } from "@/v2/models/jersey/jersey";
 import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
+import { Server } from "@/v2/models/server";
 import { auth } from "@/v2/plugins/auth";
 import { isEligible } from "@/v2/utils/jersey";
 import { logEvent, reportError } from "@/v2/utils/logger";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
-import type { IncomingMessage, Server, ServerResponse } from "http";
+import type { Server as HttpServer, IncomingMessage, ServerResponse } from "http";
 import type { FromSchema } from "json-schema-to-ts";
 
 const schema = {
@@ -41,10 +42,17 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
       return await sendStatus(res, 400, `Ineligible to bid requested numbers.`);
     }
 
+    const currentRound = (await Server.findOne({ key: `jerseyBidRound` }).session(session.session))?.value;
+
+    if (!currentRound) {
+      throw new Error("Unable to fetch round.");
+    }
+
     const newBids = jerseys.map((jersey, index) => ({
       user: user._id,
       jersey: jersey._id,
       priority: index,
+      round: currentRound,
     }));
 
     await JerseyBid.deleteMany({ user: user._id }).session(session.session);
@@ -69,7 +77,7 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
   }
 }
 
-const bid: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
+const bid: RouteOptions<HttpServer, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
   url: `/bid`,
   schema,

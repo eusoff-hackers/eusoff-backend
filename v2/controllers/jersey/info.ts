@@ -53,10 +53,10 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
       Server.findOne({ key: `jerseyBidRound` }).session(session.session),
     ]);
     const info = logAndThrow([p[0]], `Bid info retrieval error`)[0];
-    const bids = logAndThrow([p[1]], `Bids parse error`)[0];
     const bidOpen = logAndThrow([p[2]], `BidOpen parse error`)[0]?.value;
     const bidClose = logAndThrow([p[3]], `BidClose parse error`)[0]?.value;
     const bidRound = logAndThrow([p[4]], `BidClose parse error`)[0]?.value;
+    const bids = logAndThrow([p[1]], `Bids parse error`)[0].filter((bid) => bid.round === bidRound);
     const canBid = await checkUserLegible(user, session);
 
     return await success(res, { info, bids, system: { bidOpen, bidClose, bidRound }, canBid });
