@@ -29,6 +29,7 @@ const schema = {
           properties: {
             bidOpen: { type: `number` },
             bidClose: { type: `number` },
+            bidRound: { type: `number` },
           },
           additionalProperties: false,
         },
@@ -47,16 +48,18 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
     const p = await Promise.allSettled([
       JerseyBidInfo.findOne({ user: user._id }).populate(`jersey`).select("-user").session(session.session),
       JerseyBid.find({ user: user._id }).select("-user").populate(`jersey`).session(session.session),
-      Server.findOne({ key: `roomBidOpen` }).session(session.session),
-      Server.findOne({ key: `roomBidClose` }).session(session.session),
+      Server.findOne({ key: `jerseyBidOpen` }).session(session.session),
+      Server.findOne({ key: `jerseyBidClose` }).session(session.session),
+      Server.findOne({ key: `jerseyBidRound` }).session(session.session),
     ]);
     const info = logAndThrow([p[0]], `Bid info retrieval error`)[0];
     const bids = logAndThrow([p[1]], `Bids parse error`)[0];
     const bidOpen = logAndThrow([p[2]], `BidOpen parse error`)[0]?.value;
     const bidClose = logAndThrow([p[3]], `BidClose parse error`)[0]?.value;
+    const bidRound = logAndThrow([p[4]], `BidClose parse error`)[0]?.value;
     const canBid = await checkUserLegible(user, session);
 
-    return await success(res, { info, bids, system: { bidOpen, bidClose }, canBid });
+    return await success(res, { info, bids, system: { bidOpen, bidClose, bidRound }, canBid });
   } catch (error) {
     reportError(error, `Bid Info handler error`);
     return sendError(res);

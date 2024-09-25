@@ -45,7 +45,7 @@ async function checkUserLegible(user: iUser, session: MongoSession): Promise<boo
     if (
       bidInfo.round > (round.value as number) ||
       bidInfo.isAllocated ||
-      bidOpen.value < Date.now() ||
+      bidOpen.value > Date.now() ||
       bidClose.value < Date.now()
     )
       return false;
