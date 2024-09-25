@@ -25,6 +25,7 @@ const rJerseyBidInfo = {
     points: { type: `number` },
     isAllocated: { type: `boolean` },
     jersey: { $ref: `jersey` },
+    teams: { type: `array`, items: { $ref: `member` } },
   },
   additionalProperties: false,
 };

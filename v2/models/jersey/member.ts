@@ -13,6 +13,16 @@ interface iMember extends Document {
   team: Types.ObjectId | iTeam;
 }
 
+const rMember = {
+  $id: `member`,
+  type: `object`,
+  required: [`team`],
+  properties: {
+    team: { $ref: `team` },
+  },
+  additionalProperties: false,
+};
+
 const memberSchema = new Schema<iMember>({
   user: { type: Schema.Types.ObjectId, required: true, ref: `User` },
   team: {
@@ -27,4 +37,4 @@ memberSchema.index({ user: 1, team: 1 }, { unique: true });
 
 const Member = model<iMember>(`Member`, memberSchema);
 
-export { iMember, Member };
+export { iMember, Member, rMember };

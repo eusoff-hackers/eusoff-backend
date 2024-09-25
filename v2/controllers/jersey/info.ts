@@ -1,4 +1,5 @@
 import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
+import type { iJerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { Server } from "@/v2/models/server";
 import { auth } from "@/v2/plugins/auth";
@@ -46,18 +47,24 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
     const user = req.session.get(`user`)!;
 
     const p = await Promise.allSettled([
-      JerseyBidInfo.findOne({ user: user._id }).populate(`jersey`).select("-user").session(session.session),
+      JerseyBidInfo.findOne({ user: user._id })
+        .populate(`jersey`)
+        .populate({ path: "teams", populate: "team" })
+        .lean()
+        .session(session.session),
       JerseyBid.find({ user: user._id }).select("-user").populate(`jersey`).session(session.session),
       Server.findOne({ key: `jerseyBidOpen` }).session(session.session),
       Server.findOne({ key: `jerseyBidClose` }).session(session.session),
       Server.findOne({ key: `jerseyBidRound` }).session(session.session),
     ]);
-    const info = logAndThrow([p[0]], `Bid info retrieval error`)[0];
+    const info: Partial<iJerseyBidInfo> | null = logAndThrow([p[0]], `Bid info retrieval error`)[0];
     const bidOpen = logAndThrow([p[2]], `BidOpen parse error`)[0]?.value;
     const bidClose = logAndThrow([p[3]], `BidClose parse error`)[0]?.value;
     const bidRound = logAndThrow([p[4]], `BidClose parse error`)[0]?.value;
     const bids = logAndThrow([p[1]], `Bids parse error`)[0].filter((bid) => bid.round === bidRound);
     const canBid = await checkUserLegible(user, session);
+
+    delete info?.user;
 
     return await success(res, { info, bids, system: { bidOpen, bidClose, bidRound }, canBid });
   } catch (error) {

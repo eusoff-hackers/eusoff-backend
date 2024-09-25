@@ -56,21 +56,18 @@ async function getJerseyInfo(jersey: iJersey, currentRound: number, session: Mon
       bidders.map((bidder) =>
         JerseyBidInfo.findOne({ user: bidder.user })
           .populate<{ user: iUser }>("user", "gender room")
+          .populate({ path: "teams", populate: "team" })
           .orFail()
-          .session(session.session),
+          .select("-jersey")
+          .session(session.session)
+          .lean(),
       ),
     ),
     `Bidder info retrieval error`,
   );
 
-  const male = users
-    .filter((user) => user.user.gender === `male`)
-    .sort((a, b) => b.points - a.points)
-    .map(({ user, points, round }) => ({ user, points, round }));
-  const female = users
-    .filter((user) => user.user.gender === `female`)
-    .sort((a, b) => b.points - a.points)
-    .map(({ user, points, round }) => ({ user, points, round }));
+  const male = users.filter((user) => user.user.gender === `male`).sort((a, b) => b.points - a.points);
+  const female = users.filter((user) => user.user.gender === `female`).sort((a, b) => b.points - a.points);
 
   const { quota } = jersey;
   return { male, female, quota };

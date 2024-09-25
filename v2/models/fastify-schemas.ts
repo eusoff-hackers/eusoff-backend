@@ -10,6 +10,7 @@ import { rIhgSport } from "@/v2/models/ihgSport";
 import { rJersey } from "@/v2/models/jersey/jersey";
 import { rJerseyBid } from "@/v2/models/jersey/jerseyBid";
 import { rJerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
+import { rMember } from "@/v2/models/jersey/member";
 import { rTeam } from "@/v2/models/jersey/team";
 import { rRoom } from "@/v2/models/room";
 import { rRoomBid } from "@/v2/models/roomBid";
@@ -23,6 +24,7 @@ import type { FastifyInstance } from "fastify";
 async function addSchemas(fastify: FastifyInstance) {
   await fastify.addSchema(rUser);
   await fastify.addSchema(rTeam);
+  await fastify.addSchema(rMember);
   await fastify.addSchema(rJerseyBidInfo);
   await fastify.addSchema(rJersey);
   await fastify.addSchema(rJerseyBid);
