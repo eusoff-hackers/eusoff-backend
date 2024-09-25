@@ -6,7 +6,7 @@ interface iUser extends Document {
   password: string;
   role: `USER` | `ADMIN`;
   year: number;
-  gender: `Male` | `Female`;
+  gender: `male` | `female`;
   email: string;
   room: string;
 }
@@ -18,7 +18,7 @@ const rUser = {
     username: { type: `string` },
     role: { type: `string`, enum: [`USER`, `ADMIN`] },
     year: { type: `number`, minimum: 0, maximum: 5 },
-    gender: { type: `string`, enum: [`Male`, `Female`] },
+    gender: { type: `string`, enum: [`male`, `female`] },
     room: { type: `string` },
   },
   additionalProperties: false,
@@ -35,7 +35,7 @@ const userSchema = new Schema<iUser>(
       required: true,
     },
     year: { type: Number, min: 0, max: 5, required: true },
-    gender: { type: String, enum: [`Male`, `Female`], required: true },
+    gender: { type: String, enum: [`male`, `female`], required: true },
     email: { type: String },
     room: { type: String, required: true },
   },

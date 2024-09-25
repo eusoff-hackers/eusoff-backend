@@ -19,14 +19,14 @@ const schema = {
         "^[0-9]{1,2}$": {
           type: `object`,
           properties: {
-            Male: {
+            male: {
               type: `array`,
               items: {
                 $ref: "jerseyBidInfo",
               },
               additionalProperties: false,
             },
-            Female: {
+            female: {
               type: `array`,
               items: {
                 $ref: "jerseyBidInfo",
@@ -35,8 +35,8 @@ const schema = {
             quota: {
               type: `object`,
               properties: {
-                Male: { type: `number` },
-                Female: { type: `number` },
+                male: { type: `number` },
+                female: { type: `number` },
               },
               additionalProperties: false,
             },
@@ -63,17 +63,17 @@ async function getJerseyInfo(jersey: iJersey, currentRound: number, session: Mon
     `Bidder info retrieval error`,
   );
 
-  const Male = users
-    .filter((user) => user.user.gender === `Male`)
+  const male = users
+    .filter((user) => user.user.gender === `male`)
     .sort((a, b) => b.points - a.points)
     .map(({ user, points, round }) => ({ user, points, round }));
-  const Female = users
-    .filter((user) => user.user.gender === `Female`)
+  const female = users
+    .filter((user) => user.user.gender === `female`)
     .sort((a, b) => b.points - a.points)
     .map(({ user, points, round }) => ({ user, points, round }));
 
   const { quota } = jersey;
-  return { Male, Female, quota };
+  return { male, female, quota };
 }
 
 async function handler(req: FastifyRequest, res: FastifyReply) {
