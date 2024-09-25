@@ -14,7 +14,6 @@ interface iUser extends Document {
 const rUser = {
   $id: `user`,
   type: `object`,
-  required: [`username`],
   properties: {
     username: { type: `string` },
     role: { type: `string`, enum: [`USER`, `ADMIN`] },

@@ -42,11 +42,7 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
       return await sendStatus(res, 400, `Ineligible to bid requested numbers.`);
     }
 
-    const currentRound = (await Server.findOne({ key: `jerseyBidRound` }).session(session.session))?.value;
-
-    if (!currentRound) {
-      throw new Error("Unable to fetch round.");
-    }
+    const currentRound = (await Server.findOne({ key: `jerseyBidRound` }).orFail().session(session.session))?.value;
 
     const newBids = jerseys.map((jersey, index) => ({
       user: user._id,
