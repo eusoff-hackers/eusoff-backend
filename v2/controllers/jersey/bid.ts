@@ -4,7 +4,7 @@ import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
 import { Server } from "@/v2/models/server";
 import { auth } from "@/v2/plugins/auth";
 import { isEligible } from "@/v2/utils/jersey";
-import { logEvent, reportError } from "@/v2/utils/logger";
+import { logAndThrow, logEvent, reportError } from "@/v2/utils/logger";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
 import type { Server as HttpServer, IncomingMessage, ServerResponse } from "http";
@@ -35,9 +35,20 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
   const session = req.session.get(`session`)!;
   try {
     const user = req.session.get(`user`)!;
-    const jerseys = await Jersey.find({
-      number: { $in: req.body.bids.map((j) => j.number) },
-    }).session(session.session);
+
+    let jerseys: iJersey[];
+
+    try {
+      jerseys = logAndThrow(
+        await Promise.allSettled(
+          req.body.bids.map(async (j) => await Jersey.findOne({ number: j.number }).orFail().session(session.session)),
+        ),
+        `Jersey parsing error`,
+      );
+    } catch (error) {
+      return await sendStatus(res, 400, `Invalid number(s).`);
+    }
+
     if (!(await isEligible(user, jerseys, session))) {
       return await sendStatus(res, 400, `Ineligible to bid requested numbers.`);
     }
