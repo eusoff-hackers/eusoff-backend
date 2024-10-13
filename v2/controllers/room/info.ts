@@ -26,7 +26,7 @@ const schema = {
           type: `object`,
           properties: {
             bidOpen: { type: `number` },
-            bidClose: { tyhpe: `number` },
+            bidClose: { type: `number` },
           },
           additionalProperties: false,
         },

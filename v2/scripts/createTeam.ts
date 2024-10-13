@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { Team } from "@/v2/models/team";
+import { Team } from "@/v2/models/jersey/team";
 import mongoose from "mongoose";
 
 const { env } = process;

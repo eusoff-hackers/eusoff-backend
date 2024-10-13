@@ -1,12 +1,13 @@
-import { Bid } from "@/v2/models/bid";
-import type { iJersey } from "@/v2/models/jersey";
-import { Jersey } from "@/v2/models/jersey";
+import type { iJersey } from "@/v2/models/jersey/jersey";
+import { Jersey } from "@/v2/models/jersey/jersey";
+import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
+import { Server } from "@/v2/models/server";
 import { auth } from "@/v2/plugins/auth";
 import { isEligible } from "@/v2/utils/jersey";
-import { logEvent, reportError } from "@/v2/utils/logger";
+import { logAndThrow, logEvent, reportError } from "@/v2/utils/logger";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
-import type { IncomingMessage, Server, ServerResponse } from "http";
+import type { Server as HttpServer, IncomingMessage, ServerResponse } from "http";
 import type { FromSchema } from "json-schema-to-ts";
 
 const schema = {
@@ -34,21 +35,35 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
   const session = req.session.get(`session`)!;
   try {
     const user = req.session.get(`user`)!;
-    const jerseys = await Jersey.find({
-      number: { $in: req.body.bids.map((j) => j.number) },
-    });
+
+    let jerseys: iJersey[];
+
+    try {
+      jerseys = logAndThrow(
+        await Promise.allSettled(
+          req.body.bids.map(async (j) => await Jersey.findOne({ number: j.number }).orFail().session(session.session)),
+        ),
+        `Jersey parsing error`,
+      );
+    } catch (error) {
+      return await sendStatus(res, 400, `Invalid number(s).`);
+    }
+
     if (!(await isEligible(user, jerseys, session))) {
       return await sendStatus(res, 400, `Ineligible to bid requested numbers.`);
     }
+
+    const currentRound = (await Server.findOne({ key: `jerseyBidRound` }).orFail().session(session.session))?.value;
 
     const newBids = jerseys.map((jersey, index) => ({
       user: user._id,
       jersey: jersey._id,
       priority: index,
+      round: currentRound,
     }));
 
-    await Bid.deleteMany({ user: user._id }).session(session.session);
-    await Bid.create(newBids, { session: session.session });
+    await JerseyBid.deleteMany({ user: user._id }).session(session.session);
+    await JerseyBid.create(newBids, { session: session.session });
 
     await logEvent(`USER PLACE BIDS`, session, JSON.stringify(newBids), user._id);
 
@@ -69,12 +84,12 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
   }
 }
 
-const create: RouteOptions<Server, IncomingMessage, ServerResponse, { Body: iBody }> = {
+const bid: RouteOptions<HttpServer, IncomingMessage, ServerResponse, { Body: iBody }> = {
   method: `POST`,
-  url: `/create`,
+  url: `/bid`,
   schema,
   preHandler: auth,
   handler,
 };
 
-export { create };
+export { bid };
