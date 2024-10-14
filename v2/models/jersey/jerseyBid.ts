@@ -35,7 +35,7 @@ const jerseyBidSchema = new Schema<iJerseyBid>({
 });
 
 // To make unique (user, team)
-jerseyBidSchema.index({ user: 1, priority: 1 }, { unique: true });
+jerseyBidSchema.index({ user: 1, priority: 1, round: 1 }, { unique: true });
 
 const JerseyBid = model<iJerseyBid>(`JerseyBid`, jerseyBidSchema);
 
