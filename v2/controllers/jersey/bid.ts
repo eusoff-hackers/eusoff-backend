@@ -62,7 +62,7 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
       round: currentRound,
     }));
 
-    await JerseyBid.deleteMany({ user: user._id }).session(session.session);
+    await JerseyBid.deleteMany({ user: user._id, round: currentRound }).session(session.session);
     await JerseyBid.create(newBids, { session: session.session });
 
     await logEvent(`USER PLACE BIDS`, session, JSON.stringify(newBids), user._id);
