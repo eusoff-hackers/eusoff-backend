@@ -13,6 +13,7 @@ import { isEligibleWithoutUserLegible } from "@/v2/utils/jersey";
 import { logAndThrow } from "@/v2/utils/logger";
 import { MongoSession } from "@/v2/utils/mongoSession";
 import mongoose from "mongoose";
+import readline from "readline";
 
 function sfc32(a: number, b: number, c: number, d: number) {
   return function () {
@@ -121,6 +122,10 @@ async function allocate(jersey: iJersey, priority: number, round: number, sessio
   }
 }
 
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
   const session = new MongoSession();
@@ -140,7 +145,11 @@ async function allocate(jersey: iJersey, priority: number, round: number, sessio
       }
     }
 
-    await session.commit();
+    const answer = await new Promise((resolve) => {
+      rl.question(`Commit? (y/n) `, resolve);
+    });
+    if (answer === `y`) await session.commit();
+
     console.log("SUCCESS");
   } catch (err) {
     console.error(err);
