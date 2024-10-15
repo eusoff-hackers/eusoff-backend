@@ -103,15 +103,22 @@ async function allocate(jersey: iJersey, priority: number, round: number, sessio
         bidders.map(async (b) => {
           return {
             bidder: b,
-            eligible:
-              (await isEligibleWithoutUserLegible(b.user, [jersey], session)) &&
-              (await JerseyBidInfo.findOne({ _id: b._id }).orFail().session(session.session)).isAllocated === false,
+            eligible: await isEligibleWithoutUserLegible(b.user, [jersey], session),
+            isAllocated: (await JerseyBidInfo.findOne({ _id: b._id }).orFail().session(session.session)).isAllocated,
           };
         }),
       ),
       "Bidder eligibility parse error",
     );
-    bidders = tmp.filter((bidder) => bidder.eligible).map((b) => b.bidder);
+
+    tmp
+      .filter((bidder) => !bidder.eligible)
+      .forEach((b) => console.log(`${b.bidder.user.username} failed to get ${jersey.number}`));
+    tmp
+      .filter((bidder) => bidder.isAllocated)
+      .forEach((b) => console.log(`${b.bidder.user.username} already allocated, skipping..`));
+
+    bidders = tmp.filter((bidder) => bidder.eligible && !bidder.isAllocated).map((b) => b.bidder);
 
     if (bidders.length == 0) break;
 
