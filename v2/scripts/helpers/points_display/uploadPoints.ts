@@ -170,7 +170,7 @@ interface Data {
 
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
-  const csvFilePath = "./v2/scripts/csv/points_formatted.csv";
+  const csvFilePath = "./v2/scripts/csv/points_display/points.csv";
   const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
@@ -195,7 +195,7 @@ interface Data {
 
         for (const user of result) {
           const tmp = await User.findOne({ username: user.username }).session(session);
-          if (!tmp || tmp.role !== "USER") missing.push(user);
+          if (!tmp) missing.push(user);
           else {
             if ((await RoomBidInfo.countDocuments({ user: tmp._id }).session(session)) !== 0) continue;
             res.push({
