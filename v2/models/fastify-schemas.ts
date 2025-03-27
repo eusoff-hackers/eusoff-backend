@@ -12,10 +12,10 @@ import { rJerseyBid } from "@/v2/models/jersey/jerseyBid";
 import { rJerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { rMember } from "@/v2/models/jersey/member";
 import { rTeam } from "@/v2/models/jersey/team";
-import { rRoom } from "@/v2/models/room";
-import { rRoomBid } from "@/v2/models/roomBid";
-import { rRoomBidInfo } from "@/v2/models/roomBidInfo";
-import { rRoomBlock } from "@/v2/models/roomBlock";
+import { rRoom } from "@/v2/models/room/room";
+import { rRoomBid } from "@/v2/models/room/roomBid";
+import { rRoomBidInfo } from "@/v2/models/room/roomBidInfo";
+import { rRoomBlock } from "@/v2/models/room/roomBlock";
 
 /* eslint-disable global-require */
 import { rUser } from "@/v2/models/user";

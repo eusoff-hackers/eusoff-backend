@@ -5,7 +5,7 @@
 /* eslint-disable no-await-in-loop */
 
 /* eslint-disable no-continue */
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
+import { RoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import { User } from "@/v2/models/user";
 import { parse } from "csv-parse";
 import * as fs from "fs";

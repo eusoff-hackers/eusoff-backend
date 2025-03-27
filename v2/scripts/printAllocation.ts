@@ -3,8 +3,8 @@
 /* eslint-disable no-restricted-syntax */
 
 /* eslint-disable no-await-in-loop */
-import type { iRoom } from "@/v2/models/room";
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
+import type { iRoom } from "@/v2/models/room/room";
+import { RoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import type { iUser } from "@/v2/models/user";
 import { writeFile } from "fs";
 import { json2csv } from "json-2-csv";

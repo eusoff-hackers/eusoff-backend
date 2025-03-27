@@ -1,5 +1,5 @@
-import type { iRoom } from "@/v2/models/room";
-import type { iRoomBidInfo } from "@/v2/models/roomBidInfo";
+import type { iRoom } from "@/v2/models/room/room";
+import type { iRoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import type { iUser } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";

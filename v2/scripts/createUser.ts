@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
+import { RoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import { User } from "@/v2/models/user";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";

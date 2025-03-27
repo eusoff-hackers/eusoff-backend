@@ -1,5 +1,5 @@
-import { RoomBid } from "@/v2/models/roomBid";
-import { RoomBidInfo, type iRoomBidInfo } from "@/v2/models/roomBidInfo";
+import { RoomBid } from "@/v2/models/room/roomBid";
+import { RoomBidInfo, type iRoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import { Server, type iServer } from "@/v2/models/server";
 import { auth } from "@/v2/plugins/auth";
 import { logAndThrow, reportError } from "@/v2/utils/logger";
