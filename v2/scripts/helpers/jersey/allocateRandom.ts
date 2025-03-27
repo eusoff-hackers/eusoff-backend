@@ -2,13 +2,12 @@
 import type { iJersey } from "@/v2/models/jersey/jersey";
 import { Jersey } from "@/v2/models/jersey/jersey";
 import { JerseyBan } from "@/v2/models/jersey/jerseyBan";
-import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
 import type { iJerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { Member } from "@/v2/models/jersey/member";
 import type { iTeam } from "@/v2/models/jersey/team";
 import { type iUser } from "@/v2/models/user";
-import { getEligible, isEligibleWithoutUserLegible } from "@/v2/utils/jersey";
+import { getEligible } from "@/v2/utils/jersey";
 import { logAndThrow } from "@/v2/utils/logger";
 import { MongoSession } from "@/v2/utils/mongoSession";
 import mongoose from "mongoose";
@@ -71,62 +70,62 @@ async function allocateUser(
   );
 }
 
-async function allocate(jersey: iJersey, priority: number, round: number, session: MongoSession) {
-  // console.log(`Allocating jersey ${jersey.number} with priority ${priority}`);
-  const bids = await JerseyBid.find({ jersey: jersey._id, priority, round }).lean().session(session.session);
+// async function allocate(jersey: iJersey, priority: number, round: number, session: MongoSession) {
+//   // console.log(`Allocating jersey ${jersey.number} with priority ${priority}`);
+//   const bids = await JerseyBid.find({ jersey: jersey._id, priority, round }).lean().session(session.session);
 
-  let bidders = logAndThrow(
-    await Promise.allSettled(
-      bids.map(
-        async (b) =>
-          await JerseyBidInfo.findOne({ user: b.user })
-            .populate<{ user: iUser }>("user")
-            .session(session.session)
-            .orFail(),
-      ),
-    ),
-    "Fail",
-  );
+//   let bidders = logAndThrow(
+//     await Promise.allSettled(
+//       bids.map(
+//         async (b) =>
+//           await JerseyBidInfo.findOne({ user: b.user })
+//             .populate<{ user: iUser }>("user")
+//             .session(session.session)
+//             .orFail(),
+//       ),
+//     ),
+//     "Fail",
+//   );
 
-  bidders.sort((a, b) => {
-    if (a.points != b.points) return a.points - b.points;
-    else if (a.user.year != b.user.year) return a.user.year - b.user.year;
-    else {
-      return getRand() - 0.5;
-    }
-  });
+//   bidders.sort((a, b) => {
+//     if (a.points != b.points) return a.points - b.points;
+//     else if (a.user.year != b.user.year) return a.user.year - b.user.year;
+//     else {
+//       return getRand() - 0.5;
+//     }
+//   });
 
-  while (bidders.length > 0) {
-    const tmp = logAndThrow(
-      await Promise.allSettled(
-        bidders.map(async (b) => {
-          return {
-            bidder: b,
-            eligible: await isEligibleWithoutUserLegible(b.user, [jersey], session),
-            isAllocated: (await JerseyBidInfo.findOne({ _id: b._id }).orFail().session(session.session)).isAllocated,
-          };
-        }),
-      ),
-      "Bidder eligibility parse error",
-    );
+//   while (bidders.length > 0) {
+//     const tmp = logAndThrow(
+//       await Promise.allSettled(
+//         bidders.map(async (b) => {
+//           return {
+//             bidder: b,
+//             eligible: await isEligibleWithoutUserLegible(b.user, [jersey], session),
+//             isAllocated: (await JerseyBidInfo.findOne({ _id: b._id }).orFail().session(session.session)).isAllocated,
+//           };
+//         }),
+//       ),
+//       "Bidder eligibility parse error",
+//     );
 
-    tmp
-      .filter((bidder) => !bidder.eligible)
-      .forEach((b) => console.log(`${b.bidder.user.username} failed to get ${jersey.number}`));
-    tmp
-      .filter((bidder) => bidder.isAllocated)
-      .forEach((b) => console.log(`${b.bidder.user.username} already allocated, skipping..`));
+//     tmp
+//       .filter((bidder) => !bidder.eligible)
+//       .forEach((b) => console.log(`${b.bidder.user.username} failed to get ${jersey.number}`));
+//     tmp
+//       .filter((bidder) => bidder.isAllocated)
+//       .forEach((b) => console.log(`${b.bidder.user.username} already allocated, skipping..`));
 
-    bidders = tmp.filter((bidder) => bidder.eligible && !bidder.isAllocated).map((b) => b.bidder);
+//     bidders = tmp.filter((bidder) => bidder.eligible && !bidder.isAllocated).map((b) => b.bidder);
 
-    if (bidders.length == 0) break;
+//     if (bidders.length == 0) break;
 
-    const bidder = bidders.pop();
-    if (!bidder) break;
+//     const bidder = bidders.pop();
+//     if (!bidder) break;
 
-    await allocateUser(bidder, jersey, round, session);
-  }
-}
+//     await allocateUser(bidder, jersey, round, session);
+//   }
+// }
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length;
