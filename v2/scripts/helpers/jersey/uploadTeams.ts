@@ -3,34 +3,22 @@
 /* eslint-disable no-restricted-syntax */
 
 /* eslint-disable no-await-in-loop */
+import { Member, type iMember } from "@/v2/models/jersey/member";
+import { Team } from "@/v2/models/jersey/team";
 import { User } from "@/v2/models/user";
-import type { iUser } from "@/v2/models/user";
-import bcrypt from "bcrypt";
 import { parse } from "csv-parse";
 import * as fs from "fs";
 import mongoose from "mongoose";
 
-const SALT_ROUNDS = 10;
-
 interface Data {
   username: string;
-  // role: string;
-  gender: "Male" | "Female";
-  year: number;
-  room: string;
-  id: string;
-  email: string;
-  password: string;
-}
-
-async function hashPassword(password: string) {
-  const hashedPw = await bcrypt.hash(password, SALT_ROUNDS);
-  return hashedPw;
+  team: string;
+  gender: string;
 }
 
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
-  const csvFilePath = "./v2/scripts/csv/passworded.csv";
+  const csvFilePath = "./v2/scripts/csv/team.csv";
   const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
@@ -43,22 +31,32 @@ async function hashPassword(password: string) {
       if (error) {
         console.error(error);
       }
-      const res: iUser[] = [];
-      for (const user of result) {
-        user.password = await hashPassword(user.password);
-        res.push({
-          ...user,
-          gender: user.gender === "Male" ? "male" : "female",
-        } as iUser);
-      }
       const session = await mongoose.startSession();
-
       await session.startTransaction({
         readConcern: { level: `snapshot` },
         writeConcern: { w: `majority`, j: true },
       });
+      await Member.deleteMany({}).session(session);
+      const res: iMember[] = [];
+      for (const membership of result) {
+        const userModel = await User.findOne({ username: membership.username.trim().toUpperCase() }).session(session);
+        if (!userModel) continue;
+        let teamModel = await Team.findOne({ name: membership.team.trim() }).session(session);
+        if (!teamModel) {
+          teamModel = await Team.findOne({
+            name: membership.team.trim() + " " + (userModel.gender == "male" ? "M" : "F"),
+          })
+            .session(session)
+            .orFail();
+        }
+        res.push({
+          user: userModel._id,
+          team: teamModel._id,
+        } as iMember);
+      }
+
       try {
-        await User.create(res, { session });
+        await Member.create(res, { session });
 
         try {
           await session.commitTransaction();

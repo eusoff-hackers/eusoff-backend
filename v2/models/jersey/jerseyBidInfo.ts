@@ -1,9 +1,11 @@
 import { Jersey } from "@/v2/models/jersey/jersey";
 import { Member } from "@/v2/models/jersey/member";
+import { User } from "@/v2/models/user";
 import type { iUser } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
 
+User;
 Jersey;
 Member;
 

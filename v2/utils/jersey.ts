@@ -63,21 +63,8 @@ async function getTeams(user: iUser, session: MongoSession) {
   );
 }
 
-/**
- * Check if a user can bid for all the jerseys in `jerseys`.
- *
- * We try our best to optimize this function since it is the core of the operations.
- * Do not pass non-updated jerseys or user. We assume user and jersey is correct.
- *
- * @param user The user in question
- * @param jerseys The jerseys in question
- * @param session Mandatory transaction session
- * @returns whether or not user is eligible to bid for all jerseys
- */
-async function isEligible(user: iUser, jerseys: iJersey[], session: MongoSession) {
+async function isEligibleWithoutUserLegible(user: iUser, jerseys: iJersey[], session: MongoSession) {
   try {
-    if ((await checkUserLegible(user, session)) === false) return false;
-
     const teams = await getTeams(user, session);
 
     if (jerseys.some((j) => j.quota[user.gender] === 0)) {
@@ -93,6 +80,28 @@ async function isEligible(user: iUser, jerseys: iJersey[], session: MongoSession
       return false;
     }
     return true;
+  } catch (error) {
+    reportError(error, `isEligible error`);
+    throw new Error(`isEligible error`);
+  }
+}
+
+/**
+ * Check if a user can bid for all the jerseys in `jerseys`.
+ *
+ * We try our best to optimize this function since it is the core of the operations.
+ * Do not pass non-updated jerseys or user. We assume user and jersey is correct.
+ *
+ * @param user The user in question
+ * @param jerseys The jerseys in question
+ * @param session Mandatory transaction session
+ * @returns whether or not user is eligible to bid for all jerseys
+ */
+async function isEligible(user: iUser, jerseys: iJersey[], session: MongoSession) {
+  try {
+    if ((await checkUserLegible(user, session)) === false) return false;
+
+    return await isEligibleWithoutUserLegible(user, jerseys, session);
   } catch (error) {
     reportError(error, `isEligible error`);
     throw new Error(`isEligible error`);
@@ -119,4 +128,22 @@ async function getEligible(user: iUser, session: MongoSession): Promise<number[]
   return eligibleJerseys;
 }
 
-export { checkUserLegible, isEligible, getEligible };
+/**
+ * Compare between two users.
+ *
+ * Returns:
+ *  1 if user1 should win,
+ *  -1 if user2 should win,
+ *  0 if it's a draw
+ *
+ * @param user1
+ * @param user2
+ * @returns
+ */
+async function compare(user1: iJerseyBidInfo, user2: iJerseyBidInfo) {
+  if (user1.points < user2.points) return -1;
+  else if (user1.points > user2.points) return 1;
+  else return 0;
+}
+
+export { checkUserLegible, isEligible, getEligible, compare, isEligibleWithoutUserLegible };

@@ -32,7 +32,7 @@ const jerseySchema = new Schema<iJersey>({
   number: { type: Number, required: true, unique: true, index: 1 },
   quota: {
     male: { type: Number, required: true, default: 3 },
-    female: { type: Number, required: false, default: 3 },
+    female: { type: Number, required: true, default: 3 },
   },
 });
 

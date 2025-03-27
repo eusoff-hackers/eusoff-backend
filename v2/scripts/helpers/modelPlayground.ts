@@ -13,11 +13,9 @@ import mongoose from "mongoose";
   await session.start();
   try {
     console.log(
-      (
-        await JerseyBidInfo.findOne({ user: "65103b7c55c6cc52dfa3b57c" })
-          .session(session.session)
-          .populate<{ teams: unknown }>({ path: "teams", populate: { path: "team", model: "Team" } })
-      )?.teams,
+      await JerseyBidInfo.findOne({ user: "670c8e1ccdf95424d35e2c2f" })
+        .session(session.session)
+        .populate<{ teams: unknown }>({ path: "teams", populate: { path: "team", model: "Team" } }),
     );
   } catch (err) {
     console.error(err);

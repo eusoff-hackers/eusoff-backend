@@ -3,34 +3,27 @@
 /* eslint-disable no-restricted-syntax */
 
 /* eslint-disable no-await-in-loop */
+import { JerseyBidInfo, type iJerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { User } from "@/v2/models/user";
-import type { iUser } from "@/v2/models/user";
-import bcrypt from "bcrypt";
 import { parse } from "csv-parse";
 import * as fs from "fs";
 import mongoose from "mongoose";
-
-const SALT_ROUNDS = 10;
 
 interface Data {
   username: string;
   // role: string;
   gender: "Male" | "Female";
-  year: number;
+  // year: number;
   room: string;
   id: string;
   email: string;
-  password: string;
-}
-
-async function hashPassword(password: string) {
-  const hashedPw = await bcrypt.hash(password, SALT_ROUNDS);
-  return hashedPw;
+  ihg_num: number;
+  points: number;
 }
 
 (async () => {
   await mongoose.connect(process.env.MONGO_URI);
-  const csvFilePath = "./v2/scripts/csv/passworded.csv";
+  const csvFilePath = "./v2/scripts/csv/points.csv";
   const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
@@ -43,22 +36,23 @@ async function hashPassword(password: string) {
       if (error) {
         console.error(error);
       }
-      const res: iUser[] = [];
-      for (const user of result) {
-        user.password = await hashPassword(user.password);
-        res.push({
-          ...user,
-          gender: user.gender === "Male" ? "male" : "female",
-        } as iUser);
-      }
       const session = await mongoose.startSession();
-
       await session.startTransaction({
         readConcern: { level: `snapshot` },
         writeConcern: { w: `majority`, j: true },
       });
+      for (const user of result) {
+        const userModel = await User.findOne({ username: user.username }).session(session).orFail();
+        await JerseyBidInfo.findOneAndUpdate({ user: userModel._id }, {
+          round: 4 - user.ihg_num,
+          points: user.points,
+        } as iJerseyBidInfo)
+          .orFail()
+          .session(session);
+      }
+
       try {
-        await User.create(res, { session });
+        // await JerseyBidInfo.create(res, { session });
 
         try {
           await session.commitTransaction();

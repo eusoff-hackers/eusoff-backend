@@ -15,8 +15,8 @@ const rl = readline.createInterface({
 
 interface Data {
   username: string;
-  // email: string;
-  id: string;
+  email: string;
+  // id: string;
   password: string;
 }
 
@@ -33,8 +33,7 @@ const transport = nodemailer.createTransport({
 
 async function mail(user: Data) {
   try {
-    const { username, password, id } = user;
-    const email = `${id}@u.nus.edu`;
+    const { username, password, email } = user;
     const template = `<!DOCTYPE html>
     <html lang="en">
     
@@ -52,19 +51,19 @@ async function mail(user: Data) {
                     <table width="600" border="0" cellspacing="0" cellpadding="20" bgcolor="#ffffff" style="border-radius: 8px; box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);">
                         <tr>
                             <td>
-                                <h2 style="margin-bottom: 30px; color: #333;">Welcome to Eusoff CCA Fair!</h2>
-                                <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">Welcome to a new year in Eusoff! Here are your account details for CCA Signup:</p>
+                                <h2 style="margin-bottom: 30px; color: #333;">Welcome to Eusoff Jersey Bidding!</h2>
+                                <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">Eusoff Hackers is back with Jersey Bidding! Here are your account details for bidding:</p>
                                 <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin-bottom: 30px;">
                                     <p style="margin: 0; color: #666; line-height: 1.6;"><strong>Username:</strong> ${username}</p>
                                     <p style="margin: 0; color: #666; line-height: 1.6;"><strong>Password:</strong> ${password}</p>
                                 </div>
                                 <p style="margin-bottom: 30px; color: #666; line-height: 1.6;">
-                                    <a href="https://eusoff.college/" style="background-color: #333; color: #f7f7f7; padding: 10px 15px; border-radius: 5px; text-decoration: none;">Visit the Website</a>
+                                    <a href="https://eusoff.org/" style="background-color: #333; color: #f7f7f7; padding: 10px 15px; border-radius: 5px; text-decoration: none;">Visit the Website</a>
                                 </p>
-                                <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">You will be able to log in to the site and sign up for CCAs around later tonight.</p>
+                                <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">You will be able to log in to the site and bid for jerseys on your respective round. Stay tuned to Channel EH!</p>
                                 <p style="margin-bottom: 30px; color: #aaa; line-height: 1.6;">If you are not the intended recipient of this email, please reply to this email immediately.</p>
                                 <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;">
-                                <p style="margin-bottom: 0; color: #aaa; line-height: 1.6;">Happy Signing Up,<br>Eusoff Hackers</p>
+                                <p style="margin-bottom: 0; color: #aaa; line-height: 1.6;">Happy Bidding,<br>Eusoff Hackers</p>
                             </td>
                         </tr>
                     </table>
@@ -80,7 +79,7 @@ async function mail(user: Data) {
     await transport.sendMail({
       from: process.env.EMAIL, // sender address
       to: email, // list of receivers
-      subject: "Credentials for CCA Signup.", // Subject line
+      subject: "Credentials for Jersey Bidding", // Subject line
       // text: mail.password, // plain text body
       html: template, // html body
     });
@@ -88,6 +87,10 @@ async function mail(user: Data) {
   } catch (error) {
     console.error(`Mailing error `, error);
   }
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 (async () => {
@@ -102,7 +105,7 @@ async function mail(user: Data) {
     },
     async (error, result: Data[]) => {
       console.error(error);
-      mail(result.filter((u) => u.username === "A0276140L")[0]);
+      mail(result.filter((u) => ["A0259080A"].includes(u.username))[0]);
       const answer = await new Promise((resolve) => {
         rl.question(`Found ${result.length} documents containing user and password. Send? (y/n) `, resolve);
       });
@@ -111,6 +114,7 @@ async function mail(user: Data) {
 
       for (const user of result) {
         await mail(user);
+        await sleep(1000);
       }
 
       console.log(`Finished.`);
