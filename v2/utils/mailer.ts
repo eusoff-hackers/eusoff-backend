@@ -63,7 +63,7 @@ async function mail(payload: Payload, session: MongoSession) {
                                   )}
 
                                   <p style="margin-bottom: 30px; color: #666; line-height: 1.6;">
-                                      <a href="https://eusoff.college/" style="background-color: #333; color: #f7f7f7; padding: 10px 15px; border-radius: 5px; text-decoration: none;">Visit the Website</a>
+                                      <a href="https://eusoff.org/" style="background-color: #333; color: #f7f7f7; padding: 10px 15px; border-radius: 5px; text-decoration: none;">Visit the Website</a>
                                   </p>
                                   <p style="margin-bottom: 30px; color: #aaa; line-height: 1.6;">If you are not the intended recipient of this email, please reply to this email immediately.</p>
                                   <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;">
