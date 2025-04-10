@@ -24,6 +24,7 @@
     "@fastify/redis": "^6.2.0",
     "@fastify/session": "^10.9.0",
     "@fastify/type-provider-json-schema-to-ts": "^2.2.2",
+    "@sendgrid/mail": "^8.1.5",
     "@types/bcrypt": "^5.0.2",
     "@types/json2csv": "^5.0.7",
     "@types/nodemailer": "^6.4.15",
