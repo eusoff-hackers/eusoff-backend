@@ -1,6 +1,6 @@
-import { Room } from "@/v2/models/room";
-import { RoomBid } from "@/v2/models/roomBid";
-import { RoomBlock } from "@/v2/models/roomBlock";
+import { Room } from "@/v2/models/room/room";
+import { RoomBid } from "@/v2/models/room/roomBid";
+import { RoomBlock } from "@/v2/models/room/roomBlock";
 import { checkCache, setCache } from "@/v2/utils/cache_handler";
 import { logAndThrow, reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";

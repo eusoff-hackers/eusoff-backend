@@ -1,4 +1,4 @@
-import type { iRoomBid } from "@/v2/models/roomBid";
+import type { iRoomBid } from "@/v2/models/room/roomBid";
 import type { Document } from "mongoose";
 import { Schema, model } from "mongoose";
 

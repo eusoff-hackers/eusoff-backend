@@ -3,7 +3,7 @@
 /* eslint-disable no-restricted-syntax */
 
 /* eslint-disable no-await-in-loop */
-import { Room } from "@/v2/models/room";
+import { Room } from "@/v2/models/room/room";
 import mongoose from "mongoose";
 
 (async () => {

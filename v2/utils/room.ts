@@ -1,7 +1,7 @@
-import { Room } from "@/v2/models/room";
-import type { iRoom } from "@/v2/models/room";
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
-import type { iRoomBidInfo } from "@/v2/models/roomBidInfo";
+import { Room } from "@/v2/models/room/room";
+import type { iRoom } from "@/v2/models/room/room";
+import { RoomBidInfo } from "@/v2/models/room/roomBidInfo";
+import type { iRoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import { Server } from "@/v2/models/server";
 import type { iServer } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";

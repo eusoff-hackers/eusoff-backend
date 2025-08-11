@@ -3,7 +3,7 @@
 /* eslint-disable no-restricted-syntax */
 
 /* eslint-disable no-await-in-loop */
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
+import { RoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import { User } from "@/v2/models/user";
 import type { iUser } from "@/v2/models/user";
 import mongoose from "mongoose";

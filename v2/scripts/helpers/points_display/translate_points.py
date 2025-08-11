@@ -190,6 +190,6 @@ def translate_csv(input_file, output_file):
         #     writer.writerow(translated_row)
 
 if __name__ == "__main__":
-    input_file = "./csv/points_raw.csv"
-    output_file = "./csv/points_formatted.csv"
+    input_file = "../../csv/points_display/points.csv"
+    output_file = "../../csv/points_display/points_translated.csv"
     translate_csv(input_file, output_file)

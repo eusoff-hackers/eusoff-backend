@@ -5,12 +5,12 @@
 /* eslint-disable no-await-in-loop */
 
 /* eslint-disable no-continue */
-import { Room } from "@/v2/models/room";
-import type { iRoom } from "@/v2/models/room";
-import { RoomBid } from "@/v2/models/roomBid";
-import type { iRoomBid } from "@/v2/models/roomBid";
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
-import { RoomBlock } from "@/v2/models/roomBlock";
+import { Room } from "@/v2/models/room/room";
+import type { iRoom } from "@/v2/models/room/room";
+import { RoomBid } from "@/v2/models/room/roomBid";
+import type { iRoomBid } from "@/v2/models/room/roomBid";
+import { RoomBidInfo } from "@/v2/models/room/roomBidInfo";
+import { RoomBlock } from "@/v2/models/room/roomBlock";
 import type { iUser } from "@/v2/models/user";
 import { validateRooms } from "@/v2/utils/room";
 import type { ClientSession } from "mongoose";

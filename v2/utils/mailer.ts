@@ -1,20 +1,22 @@
 import { logEvent, logger, reportError } from "@/v2/utils/logger";
 import type { MongoSession } from "@/v2/utils/mongoSession";
+import sgMail from "@sendgrid/mail";
 import type { Types } from "mongoose";
-import nodemailer from "nodemailer";
 
 const { ENABLE_EMAIL, EMAIL, EMAIL_PASSWORD } = process.env;
 const MAIL_FLAG = Boolean(ENABLE_EMAIL === "true") && Boolean(EMAIL) && Boolean(EMAIL_PASSWORD);
 
-const transport = nodemailer.createTransport({
-  host: "smtp.sendgrid.net",
-  port: 465,
-  secure: true,
-  auth: {
-    user: "apikey",
-    pass: process.env.SENDGRID_API,
-  },
-});
+if (process.env.SENDGRID_API) sgMail.setApiKey(process.env.SENDGRID_API);
+
+// const transport = nodemailer.createTransport({
+//   host: "smtp.sendgrid.net",
+//   port: 465,
+//   secure: true,
+//   auth: {
+//     user: "apikey",
+//     pass: process.env.SENDGRID_API,
+//   },
+// });
 
 interface Payload {
   subject: string;
@@ -27,7 +29,7 @@ interface Payload {
 
 async function mail(payload: Payload, session: MongoSession) {
   try {
-    if (!MAIL_FLAG) return false;
+    if (!MAIL_FLAG || !EMAIL) return false;
     logger.info(`Emailing user: ${payload.username}.`);
 
     const { subject, title, body, email, username, userId } = payload;
@@ -63,7 +65,7 @@ async function mail(payload: Payload, session: MongoSession) {
                                   )}
 
                                   <p style="margin-bottom: 30px; color: #666; line-height: 1.6;">
-                                      <a href="https://eusoff.college/" style="background-color: #333; color: #f7f7f7; padding: 10px 15px; border-radius: 5px; text-decoration: none;">Visit the Website</a>
+                                      <a href="https://eusoff.org/" style="background-color: #333; color: #f7f7f7; padding: 10px 15px; border-radius: 5px; text-decoration: none;">Visit the Website</a>
                                   </p>
                                   <p style="margin-bottom: 30px; color: #aaa; line-height: 1.6;">If you are not the intended recipient of this email, please reply to this email immediately.</p>
                                   <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;">
@@ -79,12 +81,20 @@ async function mail(payload: Payload, session: MongoSession) {
       
       </html>`;
 
-    await transport.sendMail({
+    // await transport.sendMail({
+    //   from: EMAIL,
+    //   to: email,
+    //   subject,
+    //   html: template,
+    // });
+    const msg = {
       from: EMAIL,
       to: email,
       subject,
       html: template,
-    });
+    };
+
+    await sgMail.send(msg);
 
     await logEvent(`MAILED USER`, session, JSON.stringify(payload), userId);
     return true;

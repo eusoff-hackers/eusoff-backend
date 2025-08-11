@@ -1,8 +1,8 @@
-import { Room } from "@/v2/models/room";
-import type { iRoom } from "@/v2/models/room";
-import { RoomBid } from "@/v2/models/roomBid";
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
-import { RoomBlock } from "@/v2/models/roomBlock";
+import { Room } from "@/v2/models/room/room";
+import type { iRoom } from "@/v2/models/room/room";
+import { RoomBid } from "@/v2/models/room/roomBid";
+import { RoomBidInfo } from "@/v2/models/room/roomBidInfo";
+import { RoomBlock } from "@/v2/models/room/roomBlock";
 import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
 import { auth } from "@/v2/plugins/auth";

@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 
 /* eslint-disable no-promise-executor-return */
-import type { iRoomBidInfo } from "@/v2/models/roomBidInfo";
-import { RoomBidInfo } from "@/v2/models/roomBidInfo";
+import type { iRoomBidInfo } from "@/v2/models/room/roomBidInfo";
+import { RoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import mongoose from "mongoose";
 
 function timeout(ms: number) {
