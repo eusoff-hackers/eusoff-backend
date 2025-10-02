@@ -20,7 +20,7 @@ function convert(s: string): string[] {
 
 async function run() {
   await mongoose.connect(process.env.MONGO_URI);
-  const csvFilePath = "./v2/scripts/csv/ccaData.csv";
+  const csvFilePath = "./v2/scripts/csv/ccaData_2526.csv";
   const fileContent = fs.readFileSync(csvFilePath, { encoding: "utf-8" });
 
   parse(
