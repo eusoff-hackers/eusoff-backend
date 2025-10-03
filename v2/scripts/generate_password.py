@@ -29,7 +29,7 @@ def generate_passwords(input_file, output_file):
             writer.writerow(row)
 
 if __name__ == "__main__":
-    input_file = "./csv/ccaUsers.csv"  # Change this to your input CSV file
+    input_file = "./csv/jersey.csv"  # Change this to your input CSV file
     output_file = "./csv/passworded.csv"  # Change this to your output CSV file
     
     generate_passwords(input_file, output_file)

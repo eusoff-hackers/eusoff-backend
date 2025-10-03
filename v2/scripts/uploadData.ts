@@ -15,8 +15,9 @@ const SALT_ROUNDS = 10;
 interface Data {
   username: string;
   // role: string;
-  gender: "Male" | "Female";
-  year: number;
+  // gender: "Male" | "Female";
+  // admission: string;
+  year: string;
   room: string;
   id: string;
   email: string;
@@ -48,7 +49,8 @@ async function hashPassword(password: string) {
         user.password = await hashPassword(user.password);
         res.push({
           ...user,
-          gender: user.gender === "Male" ? "male" : "female",
+          gender: ["1", "4"].includes(user.room[1]) ? "male" : "female",
+          year: user.year[0] === "2" ? (26 - parseInt(user.year.slice(0, 2))) : 1,
         } as iUser);
       }
       const session = await mongoose.startSession();
