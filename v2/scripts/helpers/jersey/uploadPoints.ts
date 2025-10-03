@@ -69,6 +69,7 @@ interface Data2 {
           }
           
           try {
+            await JerseyBidInfo.deleteMany({}, { session });
             await JerseyBidInfo.create(res, { session });
 
             try {

@@ -60,7 +60,7 @@ async function mail(user: Data) {
                                 <p style="margin-bottom: 30px; color: #666; line-height: 1.6;">
                                     <a href="https://eusoff.org/" style="background-color: #333; color: #f7f7f7; padding: 10px 15px; border-radius: 5px; text-decoration: none;">Visit the Website</a>
                                 </p>
-                                <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">For now, you should be able to login to the site now and check if your details are correct. Jersey Bidding will be conducted next week. For further questions, you can directly ask <a href="https://t.me/juancarlovieri">@juancarlovieri</a> on Telegram</p>
+                                <p style="margin-bottom: 20px; color: #666; line-height: 1.6;">For now, you should be able to login to the site and check if your details are correct. Jersey Bidding will be conducted next week. For further questions, you can directly ask <a href="https://t.me/juancarlovieri">@juancarlovieri</a> on Telegram</p>
                                 <p style="margin-bottom: 30px; color: #aaa; line-height: 1.6;">If you are not the intended recipient of this email, please reply to this email immediately.</p>
                                 <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 20px 0;">
                                 <p style="margin-bottom: 0; color: #aaa; line-height: 1.6;">Happy Bidding,<br>Eusoff Hackers</p>
@@ -105,7 +105,8 @@ function sleep(ms: number) {
     },
     async (error, result: Data[]) => {
       console.error(error);
-      mail(result.filter((u) => ["A0276140L"].includes(u.username))[0]);
+      result.filter((u) => ["A0276140L", "A0276892J"].includes(u.username)).forEach((u) => mail(u));
+      // mail(result.filter((u) => ["A0276140L", "A0276892J"].includes(u.username))[0]);
       const answer = await new Promise((resolve) => {
         rl.question(`Found ${result.length} documents containing user and password. Send? (y/n) `, resolve);
       });
