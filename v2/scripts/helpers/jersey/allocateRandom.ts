@@ -47,12 +47,12 @@ async function allocateUser(
     await Jersey.findOneAndUpdate({ _id: jersey._id }, { [`quota.${bidder.user.gender}`]: 0 })
       .orFail()
       .session(session.session);
-    // jersey.quota[bidder.user.gender] = 0;
+    jersey.quota[bidder.user.gender] = 0;
   } else {
     await Jersey.findOneAndUpdate({ _id: jersey._id }, { $inc: { [`quota.${bidder.user.gender}`]: -1 } })
       .orFail()
       .session(session.session);
-    // jersey.quota[bidder.user.gender] -= 1;
+    jersey.quota[bidder.user.gender] -= 1;
   }
 
   const teams = await Member.find({ user: bidder.user._id }).populate<{ team: iTeam }>("team").session(session.session);
@@ -69,63 +69,6 @@ async function allocateUser(
     `Team ban creation error`,
   );
 }
-
-// async function allocate(jersey: iJersey, priority: number, round: number, session: MongoSession) {
-//   // console.log(`Allocating jersey ${jersey.number} with priority ${priority}`);
-//   const bids = await JerseyBid.find({ jersey: jersey._id, priority, round }).lean().session(session.session);
-
-//   let bidders = logAndThrow(
-//     await Promise.allSettled(
-//       bids.map(
-//         async (b) =>
-//           await JerseyBidInfo.findOne({ user: b.user })
-//             .populate<{ user: iUser }>("user")
-//             .session(session.session)
-//             .orFail(),
-//       ),
-//     ),
-//     "Fail",
-//   );
-
-//   bidders.sort((a, b) => {
-//     if (a.points != b.points) return a.points - b.points;
-//     else if (a.user.year != b.user.year) return a.user.year - b.user.year;
-//     else {
-//       return getRand() - 0.5;
-//     }
-//   });
-
-//   while (bidders.length > 0) {
-//     const tmp = logAndThrow(
-//       await Promise.allSettled(
-//         bidders.map(async (b) => {
-//           return {
-//             bidder: b,
-//             eligible: await isEligibleWithoutUserLegible(b.user, [jersey], session),
-//             isAllocated: (await JerseyBidInfo.findOne({ _id: b._id }).orFail().session(session.session)).isAllocated,
-//           };
-//         }),
-//       ),
-//       "Bidder eligibility parse error",
-//     );
-
-//     tmp
-//       .filter((bidder) => !bidder.eligible)
-//       .forEach((b) => console.log(`${b.bidder.user.username} failed to get ${jersey.number}`));
-//     tmp
-//       .filter((bidder) => bidder.isAllocated)
-//       .forEach((b) => console.log(`${b.bidder.user.username} already allocated, skipping..`));
-
-//     bidders = tmp.filter((bidder) => bidder.eligible && !bidder.isAllocated).map((b) => b.bidder);
-
-//     if (bidders.length == 0) break;
-
-//     const bidder = bidders.pop();
-//     if (!bidder) break;
-
-//     await allocateUser(bidder, jersey, round, session);
-//   }
-// }
 
 function shuffle<T>(array: T[]): T[] {
   let currentIndex = array.length;
@@ -157,7 +100,7 @@ const rl = readline.createInterface({
 
     for (const bidder of users) {
       const { user } = bidder;
-      const jerseys = shuffle(await getEligible(user, session));
+      const jerseys = shuffle(await getEligible(user, session, false));
       if (jerseys.length == 0) {
         throw new Error(`No assignable jersey for ${user.username}`);
       }

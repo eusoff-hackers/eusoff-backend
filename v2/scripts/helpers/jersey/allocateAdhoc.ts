@@ -8,12 +8,14 @@ import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { Member } from "@/v2/models/jersey/member";
 import type { iTeam } from "@/v2/models/jersey/team";
 import { Server } from "@/v2/models/server";
-import { type iUser } from "@/v2/models/user";
+import { User, type iUser } from "@/v2/models/user";
 import { isEligibleWithoutUserLegible } from "@/v2/utils/jersey";
 import { logAndThrow } from "@/v2/utils/logger";
 import { MongoSession } from "@/v2/utils/mongoSession";
+import { getRounds } from "bcryptjs";
 import mongoose from "mongoose";
 import readline from "readline";
+import { walkUpBindingElementsAndPatterns } from "typescript";
 
 function sfc32(a: number, b: number, c: number, d: number) {
   return function () {
@@ -31,7 +33,7 @@ function sfc32(a: number, b: number, c: number, d: number) {
   };
 }
 
-const getRand = sfc32(69, 420, 1203823, 21283928);
+const getRand = sfc32(69, 420, 1203823, 2128392839);
 
 async function allocateUser(
   bidder: Omit<iJerseyBidInfo, "user"> & { user: iUser },
@@ -140,16 +142,21 @@ const rl = readline.createInterface({
   try {
     const currentRound = (await Server.findOne({ key: "jerseyBidRound" }).session(session.session).orFail()).value;
 
-    if (typeof currentRound !== "number") throw new Error("Round query error.");
+    const username = "A0308877L";
+    const jerseyNumber = 31;
+    const round = 3;
 
-    for (let cur_priority = 0; cur_priority < 5; ++cur_priority) {
-      const jerseys = logAndThrow(
-        await Promise.allSettled(await Jersey.find().session(session.session)),
-        "Fail to parse jerseys",
-      );
-      for (let i = 0; i < jerseys.length; ++i) {
-        await allocate(jerseys[i], cur_priority, currentRound, session);
-      }
+    const jersey = await Jersey.findOne({number: jerseyNumber}).session(session.session).orFail();
+    const user = await User.findOne({username}).session(session.session).orFail();
+    const bidInfo = await JerseyBidInfo.findOne({user: user._id}).session(session.session).populate<{user: iUser}>("user").orFail();
+
+    if ((await isEligibleWithoutUserLegible(user, [jersey], session)) === false) {
+      console.log("User not legible.");
+    } else if (bidInfo.isAllocated) {
+      console.log("User already allocated.");
+    } else {
+      console.log("Allocating user");
+      await allocateUser(bidInfo, jersey, round, session);
     }
 
     const answer = await new Promise((resolve) => {

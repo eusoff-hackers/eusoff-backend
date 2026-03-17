@@ -108,8 +108,8 @@ async function isEligible(user: iUser, jerseys: iJersey[], session: MongoSession
   }
 }
 
-async function getEligible(user: iUser, session: MongoSession): Promise<number[]> {
-  if ((await checkUserLegible(user, session)) === false) {
+async function getEligible(user: iUser, session: MongoSession, withUserLegible: boolean = true): Promise<number[]> {
+  if (withUserLegible && (await checkUserLegible(user, session)) === false) {
     return [];
   }
 
