@@ -3,6 +3,7 @@ import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
 import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
+import { auth } from "@/v2/plugins/auth";
 import { checkCache, setCache } from "@/v2/utils/cache_handler";
 import { reportError } from "@/v2/utils/logger";
 import { resBuilder, sendError, success } from "@/v2/utils/req_handler";
@@ -97,11 +98,21 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
   }
 }
 
+/**
+ * Residents only (rooms + teams of bidders are PDPA-sensitive). A cache hit replies before the
+ * handler runs, so close the request's transaction here in that case.
+ */
+async function guard(req: FastifyRequest, res: FastifyReply) {
+  if (!(await auth(req, res))) return;
+  await checkCache(req, res);
+  if (res.sent) await req.session.get(`session`)?.end();
+}
+
 const list: RouteOptions<HttpServer, IncomingMessage, ServerResponse, Record<string, never>> = {
   method: `GET`,
   url: `/list`,
   schema,
-  preHandler: checkCache,
+  preHandler: guard,
   handler,
   onSend: setCache,
 };

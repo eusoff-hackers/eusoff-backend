@@ -609,7 +609,9 @@ test(`admin area is admin-only; login switch blocks residents but not admins; lo
   for (const [m, p] of [[`GET`, `/admin/overview`], [`GET`, `/admin/users`], [`GET`, `/admin/analytics`], [`POST`, `/admin/rounds/1/allocate`]]) {
     assert.equal((await anon.req(m, p)).status, 401, `anon ${m} ${p}`);
   }
+  assert.equal((await anon.req(`GET`, `/jersey/list`)).status, 401, `bid board (rooms/teams) visible without login`);
   const a = await as(`a`);
+  assert.equal((await a.req(`GET`, `/jersey/list`)).status, 200);
   assert.equal((await a.req(`GET`, `/admin/users`)).status, 401);
   assert.equal((await a.req(`POST`, `/admin/assign-remaining`, {})).status, 401);
   assert.equal((await a.req(`POST`, `/user/login`, { credentials: { username: `a`, password: `nope` } })).status, 401);
