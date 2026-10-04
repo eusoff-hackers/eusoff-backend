@@ -19,7 +19,6 @@ docker run -d --name jersey-test-api --network "$NET" \
   -e MONGO_URI="$DB" -e BACKEND_PORT=3000 -e NODE_ENV=production -e CACHE_TIME=1 -e JERSEY_TICK_MS=500 \
   -e SESSION_SECRET="$(head -c 48 /dev/urandom | base64 | tr -d '\n')" -e FRONTEND_URL=http://localhost \
   --entrypoint node "$IMAGE" build/App.js >/dev/null
-sleep 6
 
 docker run --rm --network "$NET" -e API=http://jersey-test-api:3000/v2 -e MONGO_URI="$DB" \
   --entrypoint node "$IMAGE" --test --test-concurrency=1 tests/

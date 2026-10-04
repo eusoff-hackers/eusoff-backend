@@ -202,6 +202,14 @@ async function assertConsistent() {
 }
 
 before(async () => {
+  // Wait for the API under test to come up (cold container start).
+  for (let i = 0; ; i += 1) {
+    try {
+      if ((await fetch(`${API}/`)).ok) break;
+    } catch {}
+    if (i > 120) throw new Error(`API at ${API} never became ready`);
+    await sleep(500);
+  }
   client = await MongoClient.connect(MONGO_URI);
   db = client.db();
   HASH = await bcrypt.hash(PW, 4);
