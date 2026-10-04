@@ -1,4 +1,5 @@
 import v2 from "@/v2/routes/router";
+import { startJerseyScheduler } from "@/v2/utils/jerseyScheduler";
 import { logger, reportError } from "@/v2/utils/logger";
 import caching from "@fastify/caching";
 import fastifyCookie from "@fastify/cookie";
@@ -32,6 +33,7 @@ async function run() {
     await Promise.allSettled([mongoose.connect(env.MONGO_URI), fastify.listen(env.BACKEND_PORT, `0.0.0.0`)]);
 
     logger.info(`Connected to Atlas.`);
+    startJerseyScheduler();
     logger.info(`Server started, listening to ${env.BACKEND_PORT}`);
   } catch (error) {
     reportError(error, `Error starting server`);

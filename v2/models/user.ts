@@ -3,6 +3,7 @@ import { Schema, model } from "mongoose";
 
 interface iUser extends Document {
   username: string;
+  name?: string;
   password: string;
   role: `USER` | `ADMIN`;
   year: number;
@@ -16,6 +17,7 @@ const rUser = {
   type: `object`,
   properties: {
     username: { type: `string` },
+    name: { type: `string` },
     role: { type: `string`, enum: [`USER`, `ADMIN`] },
     year: { type: `number`, minimum: 0, maximum: 5 },
     gender: { type: `string`, enum: [`male`, `female`] },
@@ -27,6 +29,7 @@ const rUser = {
 const userSchema = new Schema<iUser>(
   {
     username: { type: String, required: true, unique: true, index: 1 },
+    name: { type: String },
     password: { type: String, required: true },
     role: {
       type: String,

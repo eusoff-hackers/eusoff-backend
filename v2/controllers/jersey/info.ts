@@ -1,6 +1,7 @@
 import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
 import type { iJerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
+import { JerseyRound, publicRound } from "@/v2/models/jersey/jerseyRound";
 import { Server } from "@/v2/models/server";
 import { auth } from "@/v2/plugins/auth";
 import { checkUserLegible } from "@/v2/utils/jersey";
@@ -31,6 +32,19 @@ const schema = {
             bidOpen: { type: `number` },
             bidClose: { type: `number` },
             bidRound: { type: `number` },
+            rounds: {
+              type: `array`,
+              items: {
+                type: `object`,
+                properties: {
+                  round: { type: `number` },
+                  open: { type: `number` },
+                  close: { type: `number` },
+                  status: { type: `string` },
+                },
+                additionalProperties: false,
+              },
+            },
           },
           additionalProperties: false,
         },
@@ -56,17 +70,19 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
       Server.findOne({ key: `jerseyBidOpen` }).session(session.session),
       Server.findOne({ key: `jerseyBidClose` }).session(session.session),
       Server.findOne({ key: `jerseyBidRound` }).session(session.session),
+      JerseyRound.find().sort({ round: 1 }).session(session.session),
     ]);
     const info: Partial<iJerseyBidInfo> | null = logAndThrow([p[0]], `Bid info retrieval error`)[0];
     const bidOpen = logAndThrow([p[2]], `BidOpen parse error`)[0]?.value;
     const bidClose = logAndThrow([p[3]], `BidClose parse error`)[0]?.value;
     const bidRound = logAndThrow([p[4]], `BidClose parse error`)[0]?.value;
     const bids = logAndThrow([p[1]], `Bids parse error`)[0].filter((bid) => bid.round === bidRound);
+    const rounds = logAndThrow([p[5]], `Rounds parse error`)[0].map((r) => publicRound(r));
     const canBid = await checkUserLegible(user, session);
 
     delete info?.user;
 
-    return await success(res, { info, bids, system: { bidOpen, bidClose, bidRound }, canBid });
+    return await success(res, { info, bids, system: { bidOpen, bidClose, bidRound, rounds }, canBid });
   } catch (error) {
     reportError(error, `Bid Info handler error`);
     return sendError(res);
