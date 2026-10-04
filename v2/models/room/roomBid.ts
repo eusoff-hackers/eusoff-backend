@@ -1,8 +1,11 @@
 import type { iRoom } from "@/v2/models/room/room";
 import type { iRoomBidInfo } from "@/v2/models/room/roomBidInfo";
 import type { iUser } from "@/v2/models/user";
+import { User } from "@/v2/models/user";
 import type { Document, Types } from "mongoose";
 import { Schema, model } from "mongoose";
+
+User;
 
 interface iRoomBid extends Document {
   user?: Types.ObjectId | iUser;
