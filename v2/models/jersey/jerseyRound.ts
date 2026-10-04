@@ -20,6 +20,8 @@ interface iJerseyRound extends Document {
     bidders: number;
     allocated: number;
     unallocatedBidders: number;
+    /** Leftovers given a random number after the final round. */
+    autoAssigned?: number;
   };
 }
 
@@ -39,6 +41,7 @@ const jerseyRoundSchema = new Schema<iJerseyRound>({
     bidders: { type: Number },
     allocated: { type: Number },
     unallocatedBidders: { type: Number },
+    autoAssigned: { type: Number },
   },
 });
 

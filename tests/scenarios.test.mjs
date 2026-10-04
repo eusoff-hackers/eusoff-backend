@@ -30,7 +30,7 @@ const TEAMS = [
   `Tennis M`, `Tennis F`, `Trug M`, `Trug F`, `Track M`, `Track F`, `Volleyball M`, `Volleyball F`,
 ];
 const EXCLUSIVE = [`Basketball`, `Floorball`, `Ulti`, `Handball`, `Football`, `Softball`, `Trug`, `Volleyball`];
-const defaultQuota = (n) => (n < 10 ? 1 : 3);
+const defaultQuota = (n) => (n >= 1 && n <= 9 ? 1 : 3);
 
 // ---------------------------------------------------------------- HTTP client
 class Client {
@@ -174,13 +174,9 @@ async function assertConsistent() {
       const mine = hs.filter((h) => h.number === j.number && h.u.gender === g);
       assert.ok(j.quota[g] >= 0, `#${j.number} ${g} quota negative`);
       assert.ok(mine.length <= 3, `#${j.number} has ${mine.length} ${g} holders`);
-      if (j.number < 10) assert.ok(mine.length <= 1, `#${j.number} (0-9) shared by ${g}s`);
-      if (mine.some((h) => h.allocatedRound === 1)) {
-        assert.equal(mine.length, 1, `round-1 number #${j.number} shared`);
-        assert.equal(j.quota[g], 0, `round-1 number #${j.number} still open`);
-      } else {
-        assert.equal(j.quota[g], defaultQuota(j.number) - mine.length, `#${j.number} ${g} quota out of sync`);
-      }
+      if (j.number >= 1 && j.number <= 9) assert.ok(mine.length <= 1, `#${j.number} (1-9) shared by ${g}s`);
+      assert.ok(mine.filter((h) => h.allocatedRound === 1).length <= 1, `#${j.number} shared within round 1`);
+      assert.equal(j.quota[g], defaultQuota(j.number) - mine.length, `#${j.number} ${g} quota out of sync`);
     }
   }
   // non-shareable teammates never share; every such holding has a ban; no orphan bans
@@ -344,32 +340,39 @@ test(`ranking: choice rank beats points, points beat seniority, seniority beats 
   await assertConsistent();
 });
 
-test(`round 1 never shares; 0-9 never shared later; round 2+ shares up to 3 per gender`, async () => {
+test(`round 1 doesn't share within the round; later rounds fill the rest of the quota; 1-9 never shared; 0 is shareable`, async () => {
   const users = [
     ...[`a`, `b`].map((u) => ({ u, round: 1, points: u === `a` ? 5 : 1 })),
-    ...[`c`, `d`, `e`, `f`].map((u, i) => ({ u, round: 2, points: 4 - i })),
+    ...[`c`, `d`, `e`].map((u, i) => ({ u, round: 2, points: 4 - i })),
     ...[`g`, `h`].map((u, i) => ({ u, round: 2, points: 9 - i })),
+    ...[`z1`, `z2`, `z3`].map((u) => ({ u, round: 2 })),
   ];
-  await seed({ users, rounds: [OPEN(1), LATER(2)] });
+  await seed({ users, rounds: [OPEN(1), LATER(2), LATER(3)] });
   const admin = await as(`admin`);
   await (await as(`a`)).bid(23);
   await (await as(`b`)).bid(23, 24);
   await closeAndAllocate(admin, 1);
   assert.equal(await numberOf(`a`), 23);
-  assert.equal(await numberOf(`b`), 24, `round-1 number was shared`);
+  assert.equal(await numberOf(`b`), 24, `two round-1 bidders shared a number`);
 
-  await admin.req(`PUT`, `/admin/rounds`, { rounds: [{ round: 2, open: Date.now() - 1000, close: Date.now() + 60 * S }] });
+  await admin.req(`PUT`, `/admin/rounds`, {
+    rounds: [
+      { round: 2, open: Date.now() - 1000, close: Date.now() + 60 * S },
+      { round: 3, open: Date.now() + 3600 * S, close: Date.now() + 3700 * S },
+    ],
+  });
   await sleep(1500);
-  const c = await as(`c`);
-  assert.equal((await c.bid(23)).status, 400, `could bid for a number closed in round 1`);
-  for (const u of [`c`, `d`, `e`, `f`]) await (await as(u)).bid(33, 34);
+  // 23 went to one man in round 1, so 2 more men can share it now (3 per gender).
+  for (const u of [`c`, `d`, `e`]) assert.equal((await (await as(u)).bid(23, 34)).status, 200);
   await (await as(`g`)).bid(7, 8);
   await (await as(`h`)).bid(7, 8);
+  for (const u of [`z1`, `z2`, `z3`]) await (await as(u)).bid(0);
   await closeAndAllocate(admin, 2);
-  assert.deepEqual([await numberOf(`c`), await numberOf(`d`), await numberOf(`e`)], [33, 33, 33]);
-  assert.equal(await numberOf(`f`), 34, `4th person got a full number`);
+  assert.deepEqual([await numberOf(`c`), await numberOf(`d`)], [23, 23], `round-1 number not shareable later`);
+  assert.equal(await numberOf(`e`), 34, `23 exceeded 3 per gender`);
   assert.equal(await numberOf(`g`), 7);
-  assert.equal(await numberOf(`h`), 8, `0-9 was shared in round 2`);
+  assert.equal(await numberOf(`h`), 8, `1-9 was shared`);
+  assert.deepEqual([await numberOf(`z1`), await numberOf(`z2`), await numberOf(`z3`)], [0, 0, 0], `0 should be shareable`);
   await assertConsistent();
 });
 
@@ -569,7 +572,7 @@ test(`manual assign respects quota, teams and gender; removing restores everythi
   assert.equal(await db.collection(`jerseybans`).countDocuments(), 0);
 });
 
-test(`assign remaining: everyone left gets an eligible number; preview == commit; shortages reported`, async () => {
+test(`after the last round, everyone left is auto-assigned a valid number; undo reverts it; shortages reported`, async () => {
   const users = Array.from({ length: 20 }, (_, i) => ({
     u: `x${i}`,
     round: (i % 4) + 1,
@@ -580,27 +583,34 @@ test(`assign remaining: everyone left gets an eligible number; preview == commit
   users.push({ u: `nog`, round: 1, gender: null });
   await seed({ users, rounds: [PAST(1, 400 * S), PAST(2, 300 * S), PAST(3, 200 * S), PAST(4, 100 * S)] });
   const admin = await as(`admin`);
-  await waitRound(admin, 4);
-  const preview = (await admin.req(`POST`, `/admin/assign-remaining/preview`, {})).data;
-  assert.equal(preview.results.length, 20);
-  assert.deepEqual(preview.impossible.map((x) => x.reason), [`Gender not set`]);
-  const commit = await admin.req(`POST`, `/admin/assign-remaining`, {});
-  assert.equal(commit.status, 200, JSON.stringify(commit.data));
-  for (const r of preview.results) {
-    const u = (await db.collection(`users`).findOne({ _id: new ObjectId(r.user._id) })).username;
-    assert.equal(await numberOf(u), r.number, `commit differs from preview for ${u}`);
-  }
+  const r4 = await waitRound(admin, 4);
+  assert.equal(r4.summary?.autoAssigned, 20, JSON.stringify(r4.summary));
+  assert.equal((await holders()).length, 20, `not everyone got a number`);
+  assert.equal(await numberOf(`nog`), null);
+  const again = (await admin.req(`POST`, `/admin/assign-remaining/preview`, {})).data;
+  assert.equal(again.results.length, 0, `leftovers remain after auto-assign`);
+  assert.deepEqual(again.impossible.map((x) => x.reason), [`Gender not set`]);
   await assertConsistent();
 
-  // shortage: close every number for males
-  await seed({ users: [{ u: `m1` }, { u: `m2` }], rounds: [PAST(1, 100 * S)] });
+  assert.equal((await admin.req(`POST`, `/admin/rounds/4/undo`)).status, 200);
+  assert.equal((await holders()).length, 0, `undoing the last round left auto-assigned numbers`);
+  await assertConsistent();
+
+  // shortage: round 1 isn't the last round here, so assign explicitly after closing every male number but one
+  await seed({ users: [{ u: `m1` }, { u: `m2` }], rounds: [PAST(1, 100 * S), LATER(2)] });
   const admin2 = await as(`admin`);
   await waitRound(admin2, 1);
   await db.collection(`jerseys`).updateMany({}, { $set: { "quota.male": 0 } });
   await db.collection(`jerseys`).updateOne({ number: 42 }, { $set: { "quota.male": 1 } });
-  const p2 = (await admin2.req(`POST`, `/admin/assign-remaining/preview`, {})).data;
+  const p2 = (await admin2.req(`POST`, `/admin/assign-remaining/preview`, { upToRound: 1 })).data;
   assert.equal(p2.results.length, 1);
   assert.equal(p2.impossible.length, 1);
+  const c2 = await admin2.req(`POST`, `/admin/assign-remaining`, { upToRound: 1 });
+  assert.equal(c2.status, 200, JSON.stringify(c2.data));
+  for (const r of p2.results) {
+    const u = (await db.collection(`users`).findOne({ _id: new ObjectId(r.user._id) })).username;
+    assert.equal(await numberOf(u), r.number, `commit differs from preview for ${u}`);
+  }
 });
 
 test(`admin area is admin-only; login switch blocks residents but not admins; logout ends the session`, async () => {

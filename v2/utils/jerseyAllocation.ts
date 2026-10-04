@@ -11,8 +11,8 @@ import type { iUser } from "@/v2/models/user";
 import type { MongoSession } from "@/v2/utils/mongoSession";
 import type { Types } from "mongoose";
 
-/** Rules: numbers 0-9 are never shared; everything else up to 3 per gender. */
-const defaultQuota = (number: number) => (number < 10 ? 1 : 3);
+/** Rules: numbers 1-9 are never shared; everything else (0 included) up to 3 per gender. */
+const defaultQuota = (number: number) => (number >= 1 && number <= 9 ? 1 : 3);
 
 /** Allocations made by an admin by hand rather than by a round. */
 const MANUAL_ROUND = 0;
@@ -126,14 +126,18 @@ async function planAllocation(round: number, session: MongoSession): Promise<All
 
   const results: Assignment[] = [];
   const done = new Set<string>();
+  // Round 1 doesn't share: within the round only one person per gender gets each number. The number
+  // stays open for later rounds until its quota (3 per gender) is used up.
+  const takenThisRound = new Set<string>();
   for (let choice = 0; choice < 5; choice += 1) {
     for (const bidder of bidders) {
       const number = bidder.choices[choice];
       if (done.has(bidder.userId) || number === undefined) continue;
       if (!canTake(bidder, number, quota, banned)) continue;
+      if (round === 1 && takenThisRound.has(`${number}:${bidder.gender}`)) continue;
 
-      // Round 1 numbers are never shared: the first holder closes the number for their gender.
-      take(bidder, number, quota, banned, round === 1);
+      take(bidder, number, quota, banned);
+      takenThisRound.add(`${number}:${bidder.gender}`);
       done.add(bidder.userId);
       results.push({ bidder, number, choice });
     }
@@ -176,7 +180,7 @@ async function planRemaining(upToRound: number, session: MongoSession): Promise<
       continue;
     }
     const number = options[Math.floor(random() * options.length)];
-    take(bidder, number, quota, banned, false);
+    take(bidder, number, quota, banned);
     results.push({ bidder, number });
   }
   return { results, impossible };
@@ -202,9 +206,9 @@ function canTake(bidder: Bidder, number: number, quota: Quotas, banned: Set<stri
   return !bidder.exclusiveTeams.some((t) => banned.has(`${t}:${number}`));
 }
 
-function take(bidder: Bidder, number: number, quota: Quotas, banned: Set<string>, exclusive: boolean) {
+function take(bidder: Bidder, number: number, quota: Quotas, banned: Set<string>) {
   const q = quota.get(number)!;
-  q[bidder.gender] = exclusive ? 0 : q[bidder.gender] - 1;
+  q[bidder.gender] -= 1;
   bidder.exclusiveTeams.forEach((t) => banned.add(`${t}:${number}`));
 }
 
@@ -259,7 +263,7 @@ async function assignJersey(userId: Types.ObjectId | string, jersey: iJersey, ro
   info.allocatedRound = round;
   await info.save({ session: session.session });
 
-  const update = round === 1 ? { $set: { [`quota.${gender}`]: 0 } } : { $inc: { [`quota.${gender}`]: -1 } };
+  const update = { $inc: { [`quota.${gender}`]: -1 } };
   await Jersey.updateOne({ _id: jersey._id }, update).session(session.session);
 
   const teams =
@@ -281,7 +285,7 @@ async function unassignJersey(info: Omit<iJerseyBidInfo, `user`> & { user: iUser
   if (!gender) throw new Error(`Cannot unallocate ${info.user.username}: gender not set.`);
   const cap = defaultQuota(jersey.number);
 
-  jersey.quota[gender] = info.allocatedRound === 1 ? cap : Math.min(cap, jersey.quota[gender] + 1);
+  jersey.quota[gender] = Math.min(cap, jersey.quota[gender] + 1);
   await jersey.save({ session: session.session });
 
   await JerseyBidInfo.updateOne(
@@ -309,7 +313,7 @@ async function allocateRound(round: number, session: MongoSession) {
   for (const { bidder, number } of plan.results) {
     await assignJersey(bidder.userId, jerseys.get(number)!, round, session);
   }
-  const summary = {
+  const summary: { bidders: number; allocated: number; unallocatedBidders: number; autoAssigned?: number } = {
     bidders: plan.results.length + plan.unallocated.length,
     allocated: plan.results.length,
     unallocatedBidders: plan.unallocated.length,
@@ -317,11 +321,21 @@ async function allocateRound(round: number, session: MongoSession) {
   await JerseyRound.updateOne({ round }, { status: `allocated`, allocatedAt: Date.now(), summary }).session(
     session.session,
   );
+  // After the final round, everyone still without a number gets a random allowed one (committee decision).
+  if (await isLastRound(round, session)) {
+    summary.autoAssigned = (await assignRemaining(round, session)).results.length;
+  }
   return summary;
 }
 
+async function isLastRound(round: number, session: MongoSession) {
+  return !(await JerseyRound.exists({ round: { $gt: round } }).session(session.session));
+}
+
 async function undoRound(round: number, session: MongoSession) {
-  const infos = await JerseyBidInfo.find({ allocatedRound: round, isAllocated: true })
+  // Undoing the final round also undoes the automatic leftover assignment that followed it.
+  const rounds = (await isLastRound(round, session)) ? [round, AUTO_ASSIGN_ROUND] : [round];
+  const infos = await JerseyBidInfo.find({ allocatedRound: { $in: rounds }, isAllocated: true })
     .populate<{ user: iUser }>(`user`)
     .session(session.session);
   for (const info of infos) {

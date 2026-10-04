@@ -6,6 +6,7 @@
 import { User } from "@/v2/models/user";
 import { loginEmailFor } from "@/v2/utils/jerseyEmails";
 import { closeSmtp, sendMail, verifySmtp } from "@/v2/utils/smtp";
+import bcrypt from "bcryptjs";
 import { parse } from "csv-parse/sync";
 import * as fs from "fs";
 import mongoose from "mongoose";
@@ -39,7 +40,6 @@ import mongoose from "mongoose";
 
   await mongoose.connect(process.env.MONGO_URI);
   if (send) await verifySmtp();
-  const bcrypt = await import(`bcrypt`);
 
   const summary = {
     sent: 0,
