@@ -82,6 +82,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
     const canBid = await checkUserLegible(user, session);
 
     delete info?.user;
+    delete info?.breakdown; // internal to admins; residents see previousResident/captainOf/teams
 
     const blockedReason = user.gender
       ? undefined

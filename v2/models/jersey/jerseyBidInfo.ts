@@ -16,7 +16,12 @@ interface iJerseyBidInfo extends Document {
   isAllocated: boolean;
   jersey?: Types.ObjectId;
   allocatedRound?: number;
+  /** Internal: how points were computed (admins only; residents see the facts below instead). */
   breakdown?: iPointsBreakdown;
+  /** Made a final cut last year, i.e. was a resident last year. */
+  previousResident?: boolean;
+  /** Teams they captain this year. */
+  captainOf?: string[];
 }
 
 interface iPointsBreakdown {
@@ -37,6 +42,8 @@ const rJerseyBidInfo = {
     isAllocated: { type: `boolean` },
     jersey: { $ref: `jersey` },
     allocatedRound: { type: `number` },
+    previousResident: { type: `boolean` },
+    captainOf: { type: `array`, items: { type: `string` } },
     breakdown: {
       type: `object`,
       properties: {
@@ -66,6 +73,8 @@ const jerseyBidInfoSchema = new Schema<iJerseyBidInfo>(
     isAllocated: { type: Boolean, required: true, default: false },
     jersey: { type: Schema.Types.ObjectId, ref: `Jersey` },
     allocatedRound: { type: Number },
+    previousResident: { type: Boolean, default: false },
+    captainOf: { type: [String], default: [] },
     breakdown: {
       finalCut2526: { type: Number, default: 0 },
       firstCut2627: { type: Number, default: 0 },

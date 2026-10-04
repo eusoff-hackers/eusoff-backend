@@ -3,9 +3,8 @@
 /* eslint-disable no-await-in-loop */
 
 /* eslint-disable no-restricted-syntax */
-import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { User } from "@/v2/models/user";
-import { loginEmail } from "@/v2/utils/jerseyEmails";
+import { loginEmailFor } from "@/v2/utils/jerseyEmails";
 import { closeSmtp, sendMail, verifySmtp } from "@/v2/utils/smtp";
 import { parse } from "csv-parse/sync";
 import * as fs from "fs";
@@ -67,17 +66,13 @@ import mongoose from "mongoose";
       summary.noEmail.push(`${row.username} ${user.name}`);
       continue;
     }
-    const info = await JerseyBidInfo.findOne({ user: user._id }).orFail();
-    const mail = loginEmail({
-      name: user.name ?? user.username,
-      username: user.username,
-      password: row.password,
-      round: info.round,
-      points: info.points,
-      breakdown: { finalCut2526: 0, firstCut2627: 0, captain: 0, adjustment: 0, ...info.breakdown },
-    });
+    const mail = await loginEmailFor(user, row.password);
     if (!send) {
-      console.log(`[dry run] would mail ${recipient}: ${user.username} R${info.round} ${info.points}pts`);
+      console.log(
+        `[dry run] would mail ${recipient}: ${user.username} — ${mail.text
+          .split(`\n`)
+          .find((l) => l.startsWith(`Points`))}`,
+      );
       summary.sent += 1;
       continue;
     }
@@ -95,6 +90,8 @@ import mongoose from "mongoose";
   console.log(JSON.stringify({ mode: send ? `send` : `dry-run`, ...summary }, null, 1));
   closeSmtp();
   await mongoose.disconnect();
+  // The Mongo log transport keeps the event loop alive; this is a one-shot CLI.
+  process.exit(0);
 })().catch((error) => {
   console.error(error);
   process.exit(1);

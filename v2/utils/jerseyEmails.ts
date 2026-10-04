@@ -1,3 +1,9 @@
+import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
+import { Member } from "@/v2/models/jersey/member";
+import type { iTeam } from "@/v2/models/jersey/team";
+import type { iUser } from "@/v2/models/user";
+import type { MongoSession } from "@/v2/utils/mongoSession";
+
 /** Emails residents receive about jersey bidding. Inline styles only: email clients ignore stylesheets. */
 
 const SITE_URL = process.env.WEB_URL ?? process.env.FRONTEND_URL?.split(`,`)[0] ?? ``;
@@ -18,12 +24,22 @@ interface LoginEmail {
   password: string;
   round: number;
   points: number;
-  breakdown: { finalCut2526: number; firstCut2627: number; captain: number; adjustment: number };
+  teams: string[];
+  previousResident: boolean;
+  captainOf: string[];
+}
+
+/** Resident-facing facts behind the points (the per-category breakdown stays internal). */
+function facts(p: LoginEmail) {
+  return [
+    ...p.captainOf.map((t) => `Captain · ${displayTeam(t)}`),
+    ...(p.previousResident ? [`Previous resident`] : []),
+    ...p.teams.map(displayTeam),
+  ];
 }
 
 function loginEmail(p: LoginEmail) {
   const subject = `Jersey Bidding 26/27 — your login, points and round`;
-  const pts = p.breakdown;
   const rows = ROUNDS.map(
     ([r, when, who], i) =>
       `<tr><td style="padding:6px 0;color:${i + 1 === p.round ? `#fde9ff` : `#bbc7c6`};font-weight:${
@@ -51,9 +67,18 @@ function loginEmail(p: LoginEmail) {
   <div style="background:#003734;border-radius:16px;padding:24px;margin-bottom:16px">
     <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase">Your points</div>
     <div style="font-size:48px;line-height:1;color:#fde9ff;font-weight:500;margin:8px 0">${p.points}</div>
-    <div style="font-size:14px">Final cut 25/26: ${pts.finalCut2526} · First cut 26/27: ${
-      pts.firstCut2627
-    } · Captain: ${pts.captain}${pts.adjustment ? ` · Adjustment: ${pts.adjustment}` : ``}</div>
+    <div style="font-size:14px;line-height:1.8">${
+      facts(p).length
+        ? facts(p)
+            .map(
+              (f) =>
+                `<span style="display:inline-block;border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:2px 8px;margin:0 6px 6px 0">${esc(
+                  f,
+                )}</span>`,
+            )
+            .join(``)
+        : `No IHG teams on record yet`
+    }</div>
   </div>
   <div style="background:#011d1c;border-radius:16px;padding:20px 24px;margin-bottom:24px">
     <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px">Schedule (bid in your round only)</div>
@@ -74,9 +99,7 @@ function loginEmail(p: LoginEmail) {
     `  Username: ${p.username}`,
     `  Password: ${p.password}`,
     ``,
-    `Points: ${p.points} (final cut 25/26: ${pts.finalCut2526}, first cut 26/27: ${pts.firstCut2627}, captain: ${
-      pts.captain
-    }${pts.adjustment ? `, adjustment: ${pts.adjustment}` : ``})`,
+    `Points: ${p.points}${facts(p).length ? ` — ${facts(p).join(`, `)}` : ``}`,
     `Your round: ${p.round}`,
     ``,
     ...ROUNDS.map(([r, when, who]) => `${r}: ${when} (${who})`),
@@ -89,4 +112,36 @@ function loginEmail(p: LoginEmail) {
   return { subject, html, text };
 }
 
-export { loginEmail };
+const TEAM_NAMES: Record<string, string> = {
+  Ulti: `Ultimate Frisbee`,
+  Takraw: `Sepak Takraw`,
+  "RR M": `Road Relay M`,
+  "RR F": `Road Relay F`,
+  "Trug M": `Touch Rugby M`,
+  "Trug F": `Touch Rugby F`,
+};
+const displayTeam = (t: string) => TEAM_NAMES[t] ?? t;
+
+/** Build the login email for a resident from their stored record. */
+async function loginEmailFor(user: iUser, password: string, session?: MongoSession) {
+  const [info, members] = await Promise.all([
+    JerseyBidInfo.findOne({ user: user._id })
+      .orFail()
+      .session(session?.session ?? null),
+    Member.find({ user: user._id })
+      .populate<{ team: iTeam }>(`team`)
+      .session(session?.session ?? null),
+  ]);
+  return loginEmail({
+    name: user.name ?? user.username,
+    username: user.username,
+    password,
+    round: info.round,
+    points: info.points,
+    teams: members.map((m) => m.team.name).sort(),
+    previousResident: Boolean(info.previousResident),
+    captainOf: info.captainOf ?? [],
+  });
+}
+
+export { displayTeam, loginEmail, loginEmailFor };

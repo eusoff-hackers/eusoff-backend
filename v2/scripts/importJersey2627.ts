@@ -39,6 +39,7 @@ interface Resident {
   round: number;
   teams: string[];
   breakdown: { finalCut2526: number; firstCut2627: number; captain: number };
+  captainOf: string[];
   points: number;
 }
 
@@ -154,7 +155,13 @@ async function upsertAccount(
     await JerseyBidInfo.updateOne(
       { user: userId },
       {
-        $set: { round: r.round, breakdown, points: r.points + adjustment },
+        $set: {
+          round: r.round,
+          breakdown,
+          points: r.points + adjustment,
+          previousResident: r.breakdown.finalCut2526 > 0,
+          captainOf: r.captainOf,
+        },
         $setOnInsert: { user: userId, isAllocated: false },
       },
       { upsert: true },

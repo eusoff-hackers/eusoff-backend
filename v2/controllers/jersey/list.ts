@@ -66,7 +66,7 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
     const infos = await JerseyBidInfo.find({ user: { $in: [...new Set(bids.map((b) => b.user.toString()))] } })
       .populate<{ user: iUser }>("user", "gender room")
       .populate({ path: "teams", populate: "team" })
-      .select("-jersey")
+      .select("-jersey -breakdown -captainOf -previousResident")
       .lean()
       .session(session.session);
     const infoBy = new Map(infos.map((i) => [i.user._id.toString(), i]));
