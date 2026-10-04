@@ -36,9 +36,12 @@ async function call(name, cookie, method, path, body) {
       headers: { "x-forwarded-proto": `https`, ...(cookie ? { cookie } : {}), ...(body ? { "content-type": `application/json` } : {}) },
       body: body ? JSON.stringify(body) : undefined,
     });
-    await res.text();
+    const text = await res.text();
     (timings[name] ??= []).push(performance.now() - t);
-    if (res.status !== 200) errors[`${name} ${res.status}`] = (errors[`${name} ${res.status}`] ?? 0) + 1;
+    if (res.status !== 200) {
+      const key = `${name} ${res.status} ${text.slice(0, 60)}`;
+      errors[key] = (errors[key] ?? 0) + 1;
+    }
     return res;
   } catch (e) {
     errors[`${name} ${e.cause?.code ?? e.message}`] = (errors[`${name} ${e.cause?.code ?? e.message}`] ?? 0) + 1;
@@ -46,9 +49,12 @@ async function call(name, cookie, method, path, body) {
   }
 }
 
-async function resident(u, i) {
-  const login = await call(`login`, null, `POST`, `/user/login`, { credentials: { username: u.username, password: `pw` } });
-  const cookie = login?.headers.get(`set-cookie`)?.split(`;`)[0];
+async function login(u) {
+  const res = await call(`login`, null, `POST`, `/user/login`, { credentials: { username: u.username, password: `pw` } });
+  return res?.headers.get(`set-cookie`)?.split(`;`)[0];
+}
+
+async function bidder(cookie, i) {
   if (!cookie) return;
   await Promise.all([call(`info`, cookie, `GET`, `/jersey/info`), call(`eligible`, cookie, `GET`, `/jersey/eligible`), call(`list`, cookie, `GET`, `/jersey/list`)]);
   const picks = [10 + (i % 7), 20 + (i % 11), 30 + (i % 13), 40 + (i % 5), 50 + (i % 17)];
@@ -56,16 +62,27 @@ async function resident(u, i) {
   for (let k = 0; k < 3; k += 1) await call(`list`, cookie, `GET`, `/jersey/list`);
 }
 
-const t0 = performance.now();
-await Promise.all(users.map(resident));
-const wall = performance.now() - t0;
-
-const pct = (a, p) => a.sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor(a.length * p))];
-console.log(`${N} residents at once — finished in ${(wall / 1000).toFixed(1)}s`);
-for (const [k, v] of Object.entries(timings)) {
-  console.log(`${k.padEnd(9)} n=${String(v.length).padStart(4)}  p50=${pct(v, 0.5).toFixed(0).padStart(5)}ms  p95=${pct(v, 0.95).toFixed(0).padStart(5)}ms  max=${Math.max(...v).toFixed(0).padStart(5)}ms`);
+function report(title, wall) {
+  const pct = (a, p) => [...a].sort((x, y) => x - y)[Math.min(a.length - 1, Math.floor(a.length * p))];
+  console.log(`\n== ${title} — ${(wall / 1000).toFixed(1)}s`);
+  for (const [k, v] of Object.entries(timings)) {
+    console.log(`${k.padEnd(9)} n=${String(v.length).padStart(4)}  p50=${pct(v, 0.5).toFixed(0).padStart(5)}ms  p95=${pct(v, 0.95).toFixed(0).padStart(5)}ms  max=${Math.max(...v).toFixed(0).padStart(5)}ms`);
+  }
+  console.log(`errors:`, Object.keys(errors).length ? errors : `none`);
+  for (const k of Object.keys(timings)) delete timings[k];
+  for (const k of Object.keys(errors)) delete errors[k];
 }
-console.log(`errors:`, Object.keys(errors).length ? errors : `none`);
+
+// A: everyone logs in during the same second (worst case).
+let t0 = performance.now();
+const cookies = await Promise.all(users.map(login));
+report(`${N} logins at the same moment`, performance.now() - t0);
+
+// B: bidding opens; everyone is already logged in (sessions last 14 days) and acts at once.
+t0 = performance.now();
+await Promise.all(cookies.map(bidder));
+report(`${N} logged-in residents bidding at the same moment`, performance.now() - t0);
+
 console.log(`bids saved: ${await db.collection(`jerseybids`).countDocuments()} / ${N * 5}`);
 for (const c of await db.collections()) await c.deleteMany({});
 await client.close();
