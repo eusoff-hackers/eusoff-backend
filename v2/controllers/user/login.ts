@@ -60,7 +60,6 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
     }
     await auth.login(user, req);
 
-    await User.updateOne({ _id: user._id }, { lastLogin: new Date() }).session(session.session);
     await logEvent(`USER LOGIN`, session, user._id);
 
     try {
@@ -69,6 +68,10 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
       reportError(error, `Login Transaction commit error`);
       await session.abort();
     }
+    // Outside the transaction: two logins of the same account at once would otherwise write-conflict.
+    await User.updateOne({ _id: user._id }, { lastLogin: new Date() }).catch((error) =>
+      reportError(error, `lastLogin update error`),
+    );
     return await success(res, { user });
   } catch (error) {
     reportError(error, `Error login handler`);

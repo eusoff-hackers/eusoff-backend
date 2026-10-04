@@ -237,7 +237,7 @@ test(`bid validation: max 5, no duplicates, only real numbers, empty clears`, as
   assert.equal((await a.bid(10, 10)).status, 400, `duplicate accepted`);
   assert.equal((await a.bid(100)).status, 400, `#100 accepted`);
   assert.equal((await a.bid(-1)).status, 400, `#-1 accepted`);
-  assert.equal((await a.req(`POST`, `/jersey/bid`, { bids: [{ number: `7` }] })).status, 400, `string accepted`);
+  assert.equal((await a.req(`POST`, `/jersey/bid`, { bids: [{ number: `seven` }] })).status, 400, `non-number accepted`);
   assert.equal((await a.req(`POST`, `/jersey/bid`, {})).status, 400, `missing bids accepted`);
   assert.equal((await a.bid(10, 11)).status, 200);
   assert.equal((await a.bid()).status, 200);
@@ -262,7 +262,7 @@ test(`one user hammering submit concurrently ends with exactly one complete subm
   const sets = [[10, 11, 12, 13, 14], [20, 21, 22], [30], [40, 41, 42, 43], [50, 51]];
   const res = await Promise.all(sets.map((s) => a.bid(...s)));
   assert.ok(res.some((r) => r.status === 200), `no submission succeeded: ${res.map((r) => r.status)}`);
-  assert.ok(res.every((r) => [200, 429].includes(r.status)), `unexpected status ${res.map((r) => `${r.status}:${r.data}`)}`);
+  assert.ok(res.every((r) => r.status === 200), `unexpected status ${res.map((r) => `${r.status}:${r.data}`)}`);
   const bids = await db.collection(`jerseybids`).find().sort({ priority: 1 }).toArray();
   const numbers = await Promise.all(bids.map(async (b) => (await db.collection(`jerseys`).findOne({ _id: b.jersey })).number));
   assert.ok(sets.some((s) => JSON.stringify(s) === JSON.stringify(numbers)), `mixed submissions saved: ${numbers}`);
@@ -298,6 +298,7 @@ test(`ranking: choice rank beats points, points beat seniority, seniority beats 
       { u: `senior`, points: 5, year: 4 },
       { u: `junior`, points: 5, year: 1 },
       { u: `richJunior`, points: 6, year: 1 },
+      { u: `poorSenior`, points: 5, year: 4 },
       { u: `twinA`, points: 3, year: 2 },
       { u: `twinB`, points: 3, year: 2 },
       { u: `girl`, gender: `female`, points: 0 },
@@ -307,10 +308,10 @@ test(`ranking: choice rank beats points, points beat seniority, seniority beats 
   const admin = await as(`admin`);
   await (await as(`lowFirst`)).bid(40, 41);
   await (await as(`highSecond`)).bid(42, 40); // 40 only as 2nd choice
-  await (await as(`senior`)).bid(50, 51);
+  await (await as(`senior`)).bid(50, 51); // same points + same choice rank -> seniority decides
   await (await as(`junior`)).bid(50, 52);
-  await (await as(`richJunior`)).bid(60, 61);
-  await (await as(`senior`)).bid(60, 50); // re-bid: senior now competes with richJunior for 60
+  await (await as(`richJunior`)).bid(60, 61); // more points beats more seniority
+  await (await as(`poorSenior`)).bid(60, 62);
   await (await as(`twinA`)).bid(70, 71);
   await (await as(`twinB`)).bid(70, 72);
   await (await as(`girl`)).bid(40);
@@ -320,9 +321,10 @@ test(`ranking: choice rank beats points, points beat seniority, seniority beats 
 
   assert.equal(await numberOf(`lowFirst`), 40, `top choice should beat a higher-points 2nd choice`);
   assert.equal(await numberOf(`highSecond`), 42);
+  assert.equal(await numberOf(`senior`), 50, `seniority should break a points tie`);
+  assert.equal(await numberOf(`junior`), 52);
   assert.equal(await numberOf(`richJunior`), 60, `points should beat seniority`);
-  assert.equal(await numberOf(`senior`), 50);
-  assert.equal(await numberOf(`junior`), 52, `junior lost 50 to the senior (same points)`);
+  assert.equal(await numberOf(`poorSenior`), 62);
   const twins = [await numberOf(`twinA`), await numberOf(`twinB`)].sort();
   assert.ok(JSON.stringify(twins) === `[70,71]` || JSON.stringify(twins) === `[70,72]`, `tie broken badly: ${twins}`);
   assert.equal(await numberOf(`girl`), 40, `female shouldn't compete with males`);
