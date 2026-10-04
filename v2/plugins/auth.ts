@@ -25,10 +25,14 @@ async function auth(req: FastifyRequest, res: FastifyReply) {
       user: iUser;
     };
 
-    const user = (await User.findById(userSession._id).session(session.session))!;
+    const user = await User.findById(userSession._id).select(`-password`).session(session.session);
+    if (!user) {
+      await sendStatus(res, 401, `Unauthorized.`);
+      return false;
+    }
 
+    // Saved automatically on send if it changed; no password hash in the session store.
     req.session.set(`user`, user);
-    await req.session.save();
     logger.info(`Refreshed user: ${user._id}.`);
     return true;
   } catch (error) {
@@ -57,7 +61,9 @@ async function admin(req: FastifyRequest, res: FastifyReply) {
 async function login(user: iUser, req: FastifyRequest) {
   try {
     await req.session.regenerate();
-    req.session.set(`user`, user);
+    const safeUser: Partial<iUser> = user.toObject();
+    delete safeUser.password;
+    req.session.set(`user`, safeUser as iUser);
 
     await req.session.save();
   } catch (error) {

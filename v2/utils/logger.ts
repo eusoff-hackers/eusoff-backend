@@ -19,6 +19,7 @@ const logger = winston.createLogger({
       format: format.combine(format.timestamp({ format: "YYYY-MM-DD HH:mm:ss.SSS" }), format.cli(), logFormat),
     }),
     new transports.File({
+      level: LOG_LEVEL,
       filename: "combined.log",
       format: format.combine(format.timestamp(), format.json()),
     }),
