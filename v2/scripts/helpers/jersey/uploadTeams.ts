@@ -13,7 +13,7 @@ import mongoose from "mongoose";
 interface Data {
   username: string;
   team: string;
-  gender: string;
+  // gender: string;
 }
 
 (async () => {

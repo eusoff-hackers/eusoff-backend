@@ -8,16 +8,6 @@ const MAIL_FLAG = Boolean(ENABLE_EMAIL === "true") && Boolean(EMAIL) && Boolean(
 
 if (process.env.SENDGRID_API) sgMail.setApiKey(process.env.SENDGRID_API);
 
-// const transport = nodemailer.createTransport({
-//   host: "smtp.sendgrid.net",
-//   port: 465,
-//   secure: true,
-//   auth: {
-//     user: "apikey",
-//     pass: process.env.SENDGRID_API,
-//   },
-// });
-
 interface Payload {
   subject: string;
   title: string;
@@ -81,18 +71,13 @@ async function mail(payload: Payload, session: MongoSession) {
       
       </html>`;
 
-    // await transport.sendMail({
-    //   from: EMAIL,
-    //   to: email,
-    //   subject,
-    //   html: template,
-    // });
     const msg = {
       from: EMAIL,
       to: email,
       subject,
       html: template,
     };
+    // await transport.sendMail(msg);
 
     await sgMail.send(msg);
 

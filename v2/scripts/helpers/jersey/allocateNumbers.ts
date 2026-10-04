@@ -31,7 +31,7 @@ function sfc32(a: number, b: number, c: number, d: number) {
   };
 }
 
-const getRand = sfc32(69, 420, 1203823, 2128392839);
+const getRand = sfc32(69, 420, 1203823, 21283928);
 
 async function allocateUser(
   bidder: Omit<iJerseyBidInfo, "user"> & { user: iUser },
@@ -49,12 +49,12 @@ async function allocateUser(
     await Jersey.findOneAndUpdate({ _id: jersey._id }, { [`quota.${bidder.user.gender}`]: 0 })
       .orFail()
       .session(session.session);
-    // jersey.quota[bidder.user.gender] = 0;
+    jersey.quota[bidder.user.gender] = 0;
   } else {
     await Jersey.findOneAndUpdate({ _id: jersey._id }, { $inc: { [`quota.${bidder.user.gender}`]: -1 } })
       .orFail()
       .session(session.session);
-    // jersey.quota[bidder.user.gender] -= 1;
+    jersey.quota[bidder.user.gender] -= 1;
   }
 
   const teams = await Member.find({ user: bidder.user._id }).populate<{ team: iTeam }>("team").session(session.session);
