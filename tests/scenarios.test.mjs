@@ -456,10 +456,14 @@ test(`resident with no gender on record is blocked until an admin sets it`, asyn
 
 test(`a round is allocated exactly once even when admins race the scheduler`, async () => {
   const users = Array.from({ length: 30 }, (_, i) => ({ u: `u${i}`, points: i % 4, gender: i % 3 ? `male` : `female` }));
-  await seed({ users, rounds: [OPEN(1, 4 * S), LATER(2)] });
-  for (const [i, x] of users.entries()) await (await as(x.u)).bid(10 + (i % 4), 20 + (i % 6), 30 + i);
+  await seed({ users, rounds: [OPEN(1), LATER(2)] });
+  for (const [i, x] of users.entries()) {
+    assert.equal((await (await as(x.u)).bid(10 + (i % 4), 20 + (i % 6), 30 + i)).status, 200);
+  }
   const admins = await Promise.all([1, 2, 3, 4, 5].map(() => as(`admin`)));
-  await sleep(4200);
+  const close = Date.now() + 1500;
+  await admins[0].req(`PUT`, `/admin/rounds`, { rounds: [{ round: 1, open: Date.now() - 60 * S, close }] });
+  await sleep(close - Date.now() + 50); // fire right as it closes, racing the scheduler tick
   const res = await Promise.all(admins.map((a) => a.req(`POST`, `/admin/rounds/1/allocate`)));
   const okCount = res.filter((r) => r.status === 200).length;
   assert.ok(okCount <= 1, `allocated ${okCount} times by admins`);

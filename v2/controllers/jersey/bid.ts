@@ -5,7 +5,7 @@ import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
 import { auth } from "@/v2/plugins/auth";
 import { isEligible } from "@/v2/utils/jersey";
-import { logAndThrow, logEvent, reportError } from "@/v2/utils/logger";
+import { logEvent, reportError } from "@/v2/utils/logger";
 import { MongoSession, isTransientTxnError } from "@/v2/utils/mongoSession";
 import { sendError, sendStatus } from "@/v2/utils/req_handler";
 import type { FastifyReply, FastifyRequest, RouteOptions } from "fastify";
@@ -37,15 +37,11 @@ const MAX_ATTEMPTS = 5;
 
 /** Replace the user's bids for the current round. Returns an error status/message, or null on success. */
 async function saveBids(user: iUser, numbers: number[], session: MongoSession): Promise<[number, string] | null> {
-  let jerseys: iJersey[];
-  try {
-    jerseys = logAndThrow(
-      await Promise.allSettled(numbers.map((number) => Jersey.findOne({ number }).orFail().session(session.session))),
-      `Jersey parsing error`,
-    );
-  } catch (error) {
-    return [400, `Invalid number(s).`];
-  }
+  // Only a genuinely unknown number is the client's fault; DB errors (e.g. write conflicts) propagate.
+  const found = await Jersey.find({ number: { $in: numbers } }).session(session.session);
+  const byNumber = new Map(found.map((j) => [j.number, j]));
+  if (numbers.some((n) => !byNumber.has(n))) return [400, `Invalid number(s).`];
+  const jerseys: iJersey[] = numbers.map((n) => byNumber.get(n)!);
 
   if (!(await isEligible(user, jerseys, session))) {
     return [400, `Ineligible to bid requested numbers.`];
@@ -85,8 +81,8 @@ async function handler(req: FastifyRequest<{ Body: iBody }>, res: FastifyReply) 
         await session.end();
         session = new MongoSession();
         await session.start();
-        await new Promise((r) => {
-          setTimeout(r, 20 * attempt + Math.random() * 50);
+        await new Promise((resolve) => {
+          setTimeout(resolve, 20 * attempt + Math.random() * 50);
         });
       }
     }
