@@ -34,7 +34,7 @@ function facts(p: LoginEmail) {
   return [
     ...p.captainOf.map((t) => `Captain · ${displayTeam(t)}`),
     ...(p.previousResident ? [`Previous resident`] : []),
-    ...p.teams.map(displayTeam),
+    ...p.teams.filter((t) => !p.captainOf.includes(t)).map(displayTeam),
   ];
 }
 
