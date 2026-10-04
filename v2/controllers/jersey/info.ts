@@ -49,6 +49,7 @@ const schema = {
           additionalProperties: false,
         },
         canBid: { type: `boolean` },
+        blockedReason: { type: `string` },
       },
       additionalProperties: false,
     }),
@@ -82,7 +83,11 @@ async function handler(req: FastifyRequest, res: FastifyReply) {
 
     delete info?.user;
 
-    return await success(res, { info, bids, system: { bidOpen, bidClose, bidRound, rounds }, canBid });
+    const blockedReason = user.gender
+      ? undefined
+      : `Your gender isn't on record yet, so you can't bid. Please contact the jersey committee.`;
+
+    return await success(res, { info, bids, system: { bidOpen, bidClose, bidRound, rounds }, canBid, blockedReason });
   } catch (error) {
     reportError(error, `Bid Info handler error`);
     return sendError(res);

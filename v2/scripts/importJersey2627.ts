@@ -5,6 +5,7 @@
 /* eslint-disable no-restricted-syntax */
 import { DataIssue } from "@/v2/models/dataIssue";
 import { Jersey } from "@/v2/models/jersey/jersey";
+import { JerseyBid } from "@/v2/models/jersey/jerseyBid";
 import { JerseyBidInfo } from "@/v2/models/jersey/jerseyBidInfo";
 import { JerseyRound } from "@/v2/models/jersey/jerseyRound";
 import { Member } from "@/v2/models/jersey/member";
@@ -30,7 +31,8 @@ import * as path from "path";
 interface Resident {
   matric: string;
   name: string;
-  gender: `male` | `female`;
+  /** null when no sheet records it; an admin sets it later (never overwritten by a re-import). */
+  gender: `male` | `female` | null;
   room: string;
   email: string | null;
   year: number;
@@ -135,7 +137,14 @@ async function upsertAccount(
 
     const userId = await upsertAccount(
       r.matric,
-      { name: r.name, gender: r.gender, room: r.room, year: r.year, email: r.email ?? undefined, role: `USER` },
+      {
+        name: r.name,
+        room: r.room || `-`,
+        year: r.year,
+        role: `USER`,
+        ...(r.gender ? { gender: r.gender } : {}),
+        ...(r.email ? { email: r.email } : {}),
+      },
       created,
     );
 
@@ -156,6 +165,28 @@ async function upsertAccount(
     for (const team of wanted) {
       await Member.updateOne({ user: userId, team }, { $setOnInsert: { user: userId, team } }, { upsert: true });
     }
+  }
+
+  // Residents no longer on the room list lose their account, unless bidding already involved them.
+  const keep = new Set(residents.map((r) => r.matric));
+  const gone = await User.find({ role: `USER`, username: { $regex: /^A\d{7}[A-Z]$/, $nin: [...keep] } });
+  const pruned: string[] = [];
+  const kept: string[] = [];
+  for (const user of gone) {
+    const info = await JerseyBidInfo.findOne({ user: user._id });
+    if (info?.isAllocated || (await JerseyBid.exists({ user: user._id }))) {
+      kept.push(`${user.username} ${user.name}`);
+      continue;
+    }
+    await Promise.all([
+      JerseyBidInfo.deleteMany({ user: user._id }),
+      Member.deleteMany({ user: user._id }),
+      User.deleteOne({ _id: user._id }),
+    ]);
+    pruned.push(`${user.username} ${user.name}`);
+  }
+  if (kept.length) {
+    issues[`Import: no longer on the room list but has bids/a number (account kept)`] = kept;
   }
 
   // Keep admins' "resolved" ticks across re-imports.
@@ -186,6 +217,7 @@ async function upsertAccount(
     JSON.stringify({
       residents: residents.length,
       newAccounts: created.length,
+      pruned,
       issues: Object.values(issues).flat().length,
       rounds: ROUNDS.map((r) => ({
         round: r.round,

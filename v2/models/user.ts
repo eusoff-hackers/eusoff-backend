@@ -7,7 +7,9 @@ interface iUser extends Document {
   password: string;
   role: `USER` | `ADMIN`;
   year: number;
-  gender: `male` | `female`;
+  /** Unset for residents whose gender isn't on record yet; they can't bid until an admin sets it. */
+  gender?: `male` | `female`;
+  lastLogin?: Date;
   email: string;
   room: string;
 }
@@ -38,7 +40,8 @@ const userSchema = new Schema<iUser>(
       required: true,
     },
     year: { type: Number, min: 0, max: 5, required: true },
-    gender: { type: String, enum: [`male`, `female`], required: true },
+    gender: { type: String, enum: [`male`, `female`] },
+    lastLogin: { type: Date },
     email: { type: String },
     room: { type: String, required: true },
   },

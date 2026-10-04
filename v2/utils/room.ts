@@ -64,7 +64,7 @@ async function parseRooms(roomIds: string[], session: MongoSession): Promise<iPa
 function validateRooms(user: iUser, rooms: iRoom[]) {
   if (
     rooms.filter((r) => r.occupancy >= r.capacity).length +
-      rooms.filter((r) => !r.allowedGenders.includes(user.gender)).length !==
+      rooms.filter((r) => !user.gender || !r.allowedGenders.includes(user.gender)).length !==
     0
   )
     return false;

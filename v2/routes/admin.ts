@@ -1,3 +1,4 @@
+import * as analytics from "@/v2/controllers/admin/analytics";
 import * as jerseys from "@/v2/controllers/admin/jerseys";
 import * as misc from "@/v2/controllers/admin/misc";
 import * as rounds from "@/v2/controllers/admin/rounds";
@@ -6,6 +7,10 @@ import type { FastifyInstance } from "fastify";
 
 export default async (fastify: FastifyInstance) => {
   fastify.route(misc.overview);
+  fastify.route(analytics.analytics);
+  fastify.route(analytics.nonBidders);
+  fastify.route(analytics.remainingPreview);
+  fastify.route(analytics.remainingCommit);
 
   fastify.route(users.list);
   fastify.route(users.patch);

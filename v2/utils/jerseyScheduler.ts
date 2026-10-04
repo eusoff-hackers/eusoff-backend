@@ -4,7 +4,8 @@ import { allocateRound } from "@/v2/utils/jerseyAllocation";
 import { logEvent, logger, reportError } from "@/v2/utils/logger";
 import { MongoSession } from "@/v2/utils/mongoSession";
 
-const TICK_MS = 15_000;
+// Overridable so the scenario tests don't wait 15s per round.
+const TICK_MS = Number(process.env.JERSEY_TICK_MS) || 15_000;
 
 /**
  * The bid endpoints read `jerseyBidRound/Open/Close` from Server. Point them at the round that is

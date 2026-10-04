@@ -16,6 +16,8 @@ const defaultQuota = (number: number) => (number < 10 ? 1 : 3);
 
 /** Allocations made by an admin by hand rather than by a round. */
 const MANUAL_ROUND = 0;
+/** Allocations made by "assign remaining" after the rounds. */
+const AUTO_ASSIGN_ROUND = 5;
 
 type Gender = `male` | `female`;
 
@@ -26,6 +28,7 @@ interface Bidder {
   gender: Gender;
   year: number;
   points: number;
+  round: number;
   /** Jersey numbers in preference order (index 0 = top choice). */
   choices: number[];
   /** Non-shareable team ids; a number held by a teammate in one of these is off-limits. */
@@ -117,40 +120,9 @@ async function planAllocation(round: number, session: MongoSession): Promise<All
     .populate<{ user: iUser }>(`user`)
     .lean()
     .session(session.session);
-  const teams = await exclusiveTeamsByUser(
-    infos.map((i) => i.user._id as Types.ObjectId),
-    session,
-  );
-
-  const bidders: Bidder[] = infos.map((info) => {
-    const userId = info.user._id.toString();
-    return {
-      userId,
-      name: info.user.name ?? info.user.username,
-      room: info.user.room,
-      gender: info.user.gender,
-      year: info.user.year,
-      points: info.points,
-      choices: choicesByUser.get(userId) ?? [],
-      exclusiveTeams: teams.get(userId) ?? [],
-    };
-  });
-
-  // Shuffle first (seeded), then a stable sort: exact ties keep their random order.
-  shuffle(
-    bidders.sort((a, b) => a.userId.localeCompare(b.userId)),
-    seededRandom(roundDoc.seed),
-  );
-  bidders.sort((a, b) => b.points - a.points || b.year - a.year);
-
-  const quota = new Map<number, Record<Gender, number>>();
-  for (const j of await Jersey.find().lean().session(session.session)) {
-    quota.set(j.number, { male: j.quota.male, female: j.quota.female });
-  }
-  const banned = new Set<string>();
-  for (const ban of await JerseyBan.find().populate<{ jersey: iJersey }>(`jersey`).lean().session(session.session)) {
-    banned.add(`${ban.team.toString()}:${ban.jersey.number}`);
-  }
+  // Residents without a recorded gender can't hold a gendered quota; the bid endpoint already refuses them.
+  const bidders = rank(await toBidders(infos, choicesByUser, session), roundDoc.seed);
+  const { quota, banned } = await loadState(session);
 
   const results: Assignment[] = [];
   const done = new Set<string>();
@@ -158,20 +130,119 @@ async function planAllocation(round: number, session: MongoSession): Promise<All
     for (const bidder of bidders) {
       const number = bidder.choices[choice];
       if (done.has(bidder.userId) || number === undefined) continue;
-
-      const q = quota.get(number);
-      if (!q || q[bidder.gender] <= 0) continue;
-      if (bidder.exclusiveTeams.some((t) => banned.has(`${t}:${number}`))) continue;
+      if (!canTake(bidder, number, quota, banned)) continue;
 
       // Round 1 numbers are never shared: the first holder closes the number for their gender.
-      q[bidder.gender] = round === 1 ? 0 : q[bidder.gender] - 1;
-      bidder.exclusiveTeams.forEach((t) => banned.add(`${t}:${number}`));
+      take(bidder, number, quota, banned, round === 1);
       done.add(bidder.userId);
       results.push({ bidder, number, choice });
     }
   }
 
   return { results, unallocated: bidders.filter((b) => !done.has(b.userId)) };
+}
+
+interface RemainingPlan {
+  results: { bidder: Bidder; number: number }[];
+  impossible: { bidder: Bidder; reason: string }[];
+}
+
+/**
+ * Give every resident of rounds <= `upToRound` who still has no number a random number they are
+ * eligible for (same sharing/team rules as a normal round after round 1). Ranked like a round, so
+ * when numbers run short the higher-points/more-senior residents are placed first. Seeded from the
+ * round, so the preview and the commit produce the same plan.
+ */
+async function planRemaining(upToRound: number, session: MongoSession): Promise<RemainingPlan> {
+  const roundDoc = await JerseyRound.findOne({ round: upToRound }).orFail().session(session.session);
+  const infos = await JerseyBidInfo.find({ isAllocated: false, round: { $lte: upToRound } })
+    .populate<{ user: iUser }>(`user`)
+    .lean()
+    .session(session.session);
+  const residents = infos.filter((i) => i.user.role === `USER`);
+
+  const impossible: RemainingPlan[`impossible`] = residents
+    .filter((i) => !i.user.gender)
+    .map((i) => ({ bidder: toBidder(i, [], []), reason: `Gender not set` }));
+  const random = seededRandom(roundDoc.seed ^ 0x5bd1e995);
+  const people = rank(await toBidders(residents, new Map(), session), roundDoc.seed ^ 0x27d4eb2f);
+  const { quota, banned } = await loadState(session);
+
+  const results: RemainingPlan[`results`] = [];
+  for (const bidder of people) {
+    const options = [...quota.keys()].sort((a, b) => a - b).filter((n) => canTake(bidder, n, quota, banned));
+    if (options.length === 0) {
+      impossible.push({ bidder, reason: `No eligible number left for ${bidder.gender}s on their teams` });
+      continue;
+    }
+    const number = options[Math.floor(random() * options.length)];
+    take(bidder, number, quota, banned, false);
+    results.push({ bidder, number });
+  }
+  return { results, impossible };
+}
+
+type Quotas = Map<number, Record<Gender, number>>;
+
+async function loadState(session: MongoSession) {
+  const quota: Quotas = new Map();
+  for (const j of await Jersey.find().lean().session(session.session)) {
+    quota.set(j.number, { male: j.quota.male, female: j.quota.female });
+  }
+  const banned = new Set<string>();
+  for (const ban of await JerseyBan.find().populate<{ jersey: iJersey }>(`jersey`).lean().session(session.session)) {
+    banned.add(`${ban.team.toString()}:${ban.jersey.number}`);
+  }
+  return { quota, banned };
+}
+
+function canTake(bidder: Bidder, number: number, quota: Quotas, banned: Set<string>) {
+  const q = quota.get(number);
+  if (!q || q[bidder.gender] <= 0) return false;
+  return !bidder.exclusiveTeams.some((t) => banned.has(`${t}:${number}`));
+}
+
+function take(bidder: Bidder, number: number, quota: Quotas, banned: Set<string>, exclusive: boolean) {
+  const q = quota.get(number)!;
+  q[bidder.gender] = exclusive ? 0 : q[bidder.gender] - 1;
+  bidder.exclusiveTeams.forEach((t) => banned.add(`${t}:${number}`));
+}
+
+type PopulatedInfo = Omit<iJerseyBidInfo, `user`> & { user: iUser };
+
+function toBidder(info: PopulatedInfo, choices: number[], exclusiveTeams: string[]): Bidder {
+  return {
+    userId: info.user._id.toString(),
+    name: info.user.name ?? info.user.username,
+    room: info.user.room,
+    gender: info.user.gender!,
+    year: info.user.year,
+    points: info.points,
+    round: info.round,
+    choices,
+    exclusiveTeams,
+  };
+}
+
+async function toBidders(infos: PopulatedInfo[], choicesByUser: Map<string, number[]>, session: MongoSession) {
+  const withGender = infos.filter((i) => i.user.gender);
+  const teams = await exclusiveTeamsByUser(
+    withGender.map((i) => i.user._id as Types.ObjectId),
+    session,
+  );
+  return withGender.map((i) => {
+    const id = i.user._id.toString();
+    return toBidder(i, choicesByUser.get(id) ?? [], teams.get(id) ?? []);
+  });
+}
+
+/** Points, then seniority; exact ties keep a seeded random order (shuffle, then stable sort). */
+function rank(bidders: Bidder[], seed: number) {
+  shuffle(
+    bidders.sort((a, b) => a.userId.localeCompare(b.userId)),
+    seededRandom(seed),
+  );
+  return bidders.sort((a, b) => b.points - a.points || b.year - a.year);
 }
 
 /** Give `userId` number `jersey`, consuming quota and banning their non-shareable teams from it. */
@@ -181,6 +252,7 @@ async function assignJersey(userId: Types.ObjectId | string, jersey: iJersey, ro
     .orFail()
     .session(session.session);
   const { gender } = info.user;
+  if (!gender) throw new Error(`Cannot allocate ${info.user.username}: gender not set.`);
 
   info.isAllocated = true;
   info.jersey = jersey._id as Types.ObjectId;
@@ -206,6 +278,7 @@ async function unassignJersey(info: Omit<iJerseyBidInfo, `user`> & { user: iUser
   if (!info.isAllocated || !info.jersey) return;
   const jersey = await Jersey.findById(info.jersey).orFail().session(session.session);
   const { gender } = info.user;
+  if (!gender) throw new Error(`Cannot unallocate ${info.user.username}: gender not set.`);
   const cap = defaultQuota(jersey.number);
 
   jersey.quota[gender] = info.allocatedRound === 1 ? cap : Math.min(cap, jersey.quota[gender] + 1);
@@ -260,8 +333,21 @@ async function undoRound(round: number, session: MongoSession) {
   return infos.length;
 }
 
+/** Commit `planRemaining` inside the caller's transaction. */
+async function assignRemaining(upToRound: number, session: MongoSession) {
+  const plan = await planRemaining(upToRound, session);
+  const jerseys = new Map((await Jersey.find().session(session.session)).map((j) => [j.number, j]));
+  for (const { bidder, number } of plan.results) {
+    await assignJersey(bidder.userId, jerseys.get(number)!, AUTO_ASSIGN_ROUND, session);
+  }
+  return plan;
+}
+
 export {
+  AUTO_ASSIGN_ROUND,
   AllocationPlan,
+  assignRemaining,
+  planRemaining,
   Bidder,
   MANUAL_ROUND,
   allocateRound,

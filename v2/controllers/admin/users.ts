@@ -61,9 +61,10 @@ async function loadAdminUsers(session: MongoSession, filter: Record<string, unkn
       username: u.username,
       name: u.name ?? u.username,
       room: u.room,
-      gender: u.gender,
+      gender: u.gender ?? null,
       year: u.year,
       role: u.role,
+      lastLogin: u.lastLogin ? new Date(u.lastLogin).getTime() : null,
       email: u.email ?? null,
       round: info?.round ?? null,
       points: info?.points ?? 0,
@@ -186,7 +187,9 @@ const allocate = adminRoute({
     const jersey = await Jersey.findOne({ number })
       .orFail(new HttpError(400, `No such number.`))
       .session(session.session);
-    if (jersey.quota[user.gender] <= 0) throw new HttpError(400, `#${number} has no ${user.gender} quota left.`);
+    const { gender } = user;
+    if (!gender) throw new HttpError(400, `Set their gender first.`);
+    if (jersey.quota[gender] <= 0) throw new HttpError(400, `#${number} has no ${gender} quota left.`);
 
     const teams = (await Member.find({ user: id }).populate<{ team: iTeam }>(`team`).lean().session(session.session))
       .filter((m) => !m.team.shareable)
