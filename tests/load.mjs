@@ -57,7 +57,7 @@ async function login(u) {
 async function bidder(cookie, i) {
   if (!cookie) return;
   await Promise.all([call(`info`, cookie, `GET`, `/jersey/info`), call(`eligible`, cookie, `GET`, `/jersey/eligible`), call(`list`, cookie, `GET`, `/jersey/list`)]);
-  const picks = [10 + (i % 7), 20 + (i % 11), 30 + (i % 13), 40 + (i % 5), 50 + (i % 17)];
+  const picks = [10 + (i % 7), 20 + (i % 9), 30 + (i % 9), 40 + (i % 9), 50 + (i % 40)];
   await call(`bid`, cookie, `POST`, `/jersey/bid`, { bids: picks.map((number) => ({ number })) });
   for (let k = 0; k < 3; k += 1) await call(`list`, cookie, `GET`, `/jersey/list`);
 }
