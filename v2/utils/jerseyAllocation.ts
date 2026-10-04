@@ -318,13 +318,13 @@ async function allocateRound(round: number, session: MongoSession) {
     allocated: plan.results.length,
     unallocatedBidders: plan.unallocated.length,
   };
-  await JerseyRound.updateOne({ round }, { status: `allocated`, allocatedAt: Date.now(), summary }).session(
-    session.session,
-  );
   // After the final round, everyone still without a number gets a random allowed one (committee decision).
   if (await isLastRound(round, session)) {
     summary.autoAssigned = (await assignRemaining(round, session)).results.length;
   }
+  await JerseyRound.updateOne({ round }, { status: `allocated`, allocatedAt: Date.now(), summary }).session(
+    session.session,
+  );
   return summary;
 }
 
