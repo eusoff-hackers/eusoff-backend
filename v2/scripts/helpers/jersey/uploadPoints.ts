@@ -43,10 +43,9 @@ interface Data2 {
         studentListContent,
         {
           delimiter: ",",
-          columns: true
+          columns: true,
         },
         async (error, result: Data[]) => {
-          
           if (error) {
             console.error(error);
           }
@@ -67,7 +66,7 @@ interface Data2 {
               isAllocated: false,
             } as iJerseyBidInfo);
           }
-          
+
           try {
             await JerseyBidInfo.deleteMany({}, { session });
             await JerseyBidInfo.create(res, { session });
@@ -83,10 +82,10 @@ interface Data2 {
           } finally {
             await session.endSession();
           }
-          
+
           console.log(`Finished.`);
-        }
-      )
+        },
+      );
     },
   );
 })();

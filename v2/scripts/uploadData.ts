@@ -50,7 +50,7 @@ async function hashPassword(password: string) {
         res.push({
           ...user,
           gender: ["1", "4"].includes(user.room[1]) ? "male" : "female",
-          year: user.year[0] === "2" ? (26 - parseInt(user.year.slice(0, 2))) : 1,
+          year: user.year[0] === "2" ? 26 - parseInt(user.year.slice(0, 2)) : 1,
         } as iUser);
       }
       const session = await mongoose.startSession();
