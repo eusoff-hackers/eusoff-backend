@@ -15,6 +15,7 @@ export default async (fastify: FastifyInstance) => {
   fastify.route(users.list);
   fastify.route(users.patch);
   fastify.route(users.resetPassword);
+  fastify.route(users.emailPassword);
   fastify.route(users.allocate);
   fastify.route(users.unallocate);
 

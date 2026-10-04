@@ -10,9 +10,11 @@ import type { iTeam } from "@/v2/models/jersey/team";
 import type { iUser } from "@/v2/models/user";
 import { User } from "@/v2/models/user";
 import { MANUAL_ROUND, assignJersey, unassignJersey } from "@/v2/utils/jerseyAllocation";
+import { loginEmail } from "@/v2/utils/jerseyEmails";
 import { logEvent } from "@/v2/utils/logger";
 import type { MongoSession } from "@/v2/utils/mongoSession";
 import { generatePassword } from "@/v2/utils/password";
+import { sendMail, smtpConfigured } from "@/v2/utils/smtp";
 import bcrypt from "bcrypt";
 import type { Types } from "mongoose";
 
@@ -164,6 +166,40 @@ const resetPassword = adminRoute({
   },
 });
 
+const emailPassword = adminRoute({
+  method: `POST`,
+  url: `/users/:id/email-password`,
+  write: true,
+  handler: async (req, session) => {
+    const { id } = req.params as { id: string };
+    const user = await User.findById(id).orFail(new HttpError(404, `User not found.`)).session(session.session);
+    if (!user.email) throw new HttpError(400, `No email address on record; add one first.`);
+    if (!smtpConfigured) throw new HttpError(503, `Email isn't configured on the server.`);
+    const info = await JerseyBidInfo.findOne({ user: id }).orFail().session(session.session);
+
+    const password = generatePassword();
+    await User.updateOne({ _id: id }, { password: await bcrypt.hash(password, 10) }).session(session.session);
+    // Send before committing: if the email fails, the old password stays valid.
+    try {
+      await sendMail({
+        to: user.email,
+        ...loginEmail({
+          name: user.name ?? user.username,
+          username: user.username,
+          password,
+          round: info.round,
+          points: info.points,
+          breakdown: { finalCut2526: 0, firstCut2627: 0, captain: 0, adjustment: 0, ...info.breakdown },
+        }),
+      });
+    } catch (error) {
+      throw new HttpError(502, `Couldn't send the email: ${(error as Error).message}`);
+    }
+    await logEvent(`ADMIN EMAIL PASSWORD`, session, user.email, req.session.user._id);
+    return { sentTo: user.email };
+  },
+});
+
 const allocate = adminRoute({
   method: `POST`,
   url: `/users/:id/allocate`,
@@ -222,4 +258,4 @@ const unallocate = adminRoute({
   },
 });
 
-export { allocate, list, loadAdminUsers, patch, resetPassword, sumBreakdown, unallocate };
+export { allocate, emailPassword, list, loadAdminUsers, patch, resetPassword, sumBreakdown, unallocate };
