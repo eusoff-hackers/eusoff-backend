@@ -11,8 +11,8 @@ import type { iUser } from "@/v2/models/user";
 import type { MongoSession } from "@/v2/utils/mongoSession";
 import type { Types } from "mongoose";
 
-/** Rules: numbers 1-9 are never shared; everything else (0 included) up to 3 per gender. */
-const defaultQuota = (number: number) => (number >= 1 && number <= 9 ? 1 : 3);
+/** Rules: numbers 0-9 are never shared (committee confirmed 0 too); everything else up to 3 per gender. */
+const defaultQuota = (number: number) => (number <= 9 ? 1 : 3);
 
 /** Allocations made by an admin by hand rather than by a round. */
 const MANUAL_ROUND = 0;

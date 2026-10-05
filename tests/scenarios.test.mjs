@@ -30,7 +30,7 @@ const TEAMS = [
   `Tennis M`, `Tennis F`, `Trug M`, `Trug F`, `Track M`, `Track F`, `Volleyball M`, `Volleyball F`,
 ];
 const EXCLUSIVE = [`Basketball`, `Floorball`, `Ulti`, `Handball`, `Football`, `Softball`, `Trug`, `Volleyball`];
-const defaultQuota = (n) => (n >= 1 && n <= 9 ? 1 : 3);
+const defaultQuota = (n) => (n <= 9 ? 1 : 3);
 
 // ---------------------------------------------------------------- HTTP client
 class Client {
@@ -174,7 +174,7 @@ async function assertConsistent() {
       const mine = hs.filter((h) => h.number === j.number && h.u.gender === g);
       assert.ok(j.quota[g] >= 0, `#${j.number} ${g} quota negative`);
       assert.ok(mine.length <= 3, `#${j.number} has ${mine.length} ${g} holders`);
-      if (j.number >= 1 && j.number <= 9) assert.ok(mine.length <= 1, `#${j.number} (1-9) shared by ${g}s`);
+      if (j.number <= 9) assert.ok(mine.length <= 1, `#${j.number} (0-9) shared by ${g}s`);
       if (mine.some((h) => h.allocatedRound === 1)) {
         assert.equal(mine.length, 1, `round-1 number #${j.number} shared`);
         assert.equal(j.quota[g], 0, `round-1 number #${j.number} still open for ${g}s`);
@@ -344,7 +344,7 @@ test(`ranking: choice rank beats points, points beat seniority, seniority beats 
   await assertConsistent();
 });
 
-test(`round-1 numbers are closed for that gender in later rounds; later rounds share up to 3; 1-9 never shared; 0 shareable`, async () => {
+test(`round-1 numbers are closed for that gender in later rounds; later rounds share up to 3; 0-9 never shared`, async () => {
   const users = [
     ...[`a`, `b`].map((u) => ({ u, round: 1, points: u === `a` ? 5 : 1 })),
     { u: `fem`, round: 2, gender: `female` },
@@ -374,14 +374,17 @@ test(`round-1 numbers are closed for that gender in later rounds; later rounds s
   for (const u of [`c`, `d`, `e`, `f`]) await (await as(u)).bid(33, 34);
   await (await as(`g`)).bid(7, 8);
   await (await as(`h`)).bid(7, 8);
-  for (const u of [`z1`, `z2`, `z3`]) await (await as(u)).bid(0);
+  await (await as(`z1`)).bid(0, 50);
+  await (await as(`z2`)).bid(0, 51);
+  await (await as(`z3`)).bid(0, 52);
   await closeAndAllocate(admin, 2);
   assert.equal(await numberOf(`fem`), 23);
   assert.deepEqual([await numberOf(`c`), await numberOf(`d`), await numberOf(`e`)], [33, 33, 33]);
   assert.equal(await numberOf(`f`), 34, `4th person got a full number`);
   assert.equal(await numberOf(`g`), 7);
   assert.equal(await numberOf(`h`), 8, `1-9 was shared`);
-  assert.deepEqual([await numberOf(`z1`), await numberOf(`z2`), await numberOf(`z3`)], [0, 0, 0], `0 should be shareable`);
+  const zeros = [await numberOf(`z1`), await numberOf(`z2`), await numberOf(`z3`)];
+  assert.equal(zeros.filter((n) => n === 0).length, 1, `0 was shared: ${zeros}`);
   await assertConsistent();
 });
 
