@@ -126,18 +126,15 @@ async function planAllocation(round: number, session: MongoSession): Promise<All
 
   const results: Assignment[] = [];
   const done = new Set<string>();
-  // Round 1 doesn't share: within the round only one person per gender gets each number. The number
-  // stays open for later rounds until its quota (3 per gender) is used up.
-  const takenThisRound = new Set<string>();
   for (let choice = 0; choice < 5; choice += 1) {
     for (const bidder of bidders) {
       const number = bidder.choices[choice];
       if (done.has(bidder.userId) || number === undefined) continue;
       if (!canTake(bidder, number, quota, banned)) continue;
-      if (round === 1 && takenThisRound.has(`${number}:${bidder.gender}`)) continue;
 
-      take(bidder, number, quota, banned);
-      takenThisRound.add(`${number}:${bidder.gender}`);
+      // Round 1 numbers are never shared: the winner closes the number for their gender, in this
+      // round and every later round.
+      take(bidder, number, quota, banned, round === 1);
       done.add(bidder.userId);
       results.push({ bidder, number, choice });
     }
@@ -180,7 +177,7 @@ async function planRemaining(upToRound: number, session: MongoSession): Promise<
       continue;
     }
     const number = options[Math.floor(random() * options.length)];
-    take(bidder, number, quota, banned);
+    take(bidder, number, quota, banned, false);
     results.push({ bidder, number });
   }
   return { results, impossible };
@@ -206,9 +203,9 @@ function canTake(bidder: Bidder, number: number, quota: Quotas, banned: Set<stri
   return !bidder.exclusiveTeams.some((t) => banned.has(`${t}:${number}`));
 }
 
-function take(bidder: Bidder, number: number, quota: Quotas, banned: Set<string>) {
+function take(bidder: Bidder, number: number, quota: Quotas, banned: Set<string>, closeNumber: boolean) {
   const q = quota.get(number)!;
-  q[bidder.gender] -= 1;
+  q[bidder.gender] = closeNumber ? 0 : q[bidder.gender] - 1;
   bidder.exclusiveTeams.forEach((t) => banned.add(`${t}:${number}`));
 }
 
@@ -263,7 +260,8 @@ async function assignJersey(userId: Types.ObjectId | string, jersey: iJersey, ro
   info.allocatedRound = round;
   await info.save({ session: session.session });
 
-  const update = { $inc: { [`quota.${gender}`]: -1 } };
+  // Round-1 wins close the number for that gender for good.
+  const update = round === 1 ? { $set: { [`quota.${gender}`]: 0 } } : { $inc: { [`quota.${gender}`]: -1 } };
   await Jersey.updateOne({ _id: jersey._id }, update).session(session.session);
 
   const teams =
@@ -285,7 +283,8 @@ async function unassignJersey(info: Omit<iJerseyBidInfo, `user`> & { user: iUser
   if (!gender) throw new Error(`Cannot unallocate ${info.user.username}: gender not set.`);
   const cap = defaultQuota(jersey.number);
 
-  jersey.quota[gender] = Math.min(cap, jersey.quota[gender] + 1);
+  // A round-1 holder was the only one of their gender, so removing them reopens the whole quota.
+  jersey.quota[gender] = info.allocatedRound === 1 ? cap : Math.min(cap, jersey.quota[gender] + 1);
   await jersey.save({ session: session.session });
 
   await JerseyBidInfo.updateOne(

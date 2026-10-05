@@ -175,8 +175,12 @@ async function assertConsistent() {
       assert.ok(j.quota[g] >= 0, `#${j.number} ${g} quota negative`);
       assert.ok(mine.length <= 3, `#${j.number} has ${mine.length} ${g} holders`);
       if (j.number >= 1 && j.number <= 9) assert.ok(mine.length <= 1, `#${j.number} (1-9) shared by ${g}s`);
-      assert.ok(mine.filter((h) => h.allocatedRound === 1).length <= 1, `#${j.number} shared within round 1`);
-      assert.equal(j.quota[g], defaultQuota(j.number) - mine.length, `#${j.number} ${g} quota out of sync`);
+      if (mine.some((h) => h.allocatedRound === 1)) {
+        assert.equal(mine.length, 1, `round-1 number #${j.number} shared`);
+        assert.equal(j.quota[g], 0, `round-1 number #${j.number} still open for ${g}s`);
+      } else {
+        assert.equal(j.quota[g], defaultQuota(j.number) - mine.length, `#${j.number} ${g} quota out of sync`);
+      }
     }
   }
   // non-shareable teammates never share; every such holding has a ban; no orphan bans
@@ -340,10 +344,11 @@ test(`ranking: choice rank beats points, points beat seniority, seniority beats 
   await assertConsistent();
 });
 
-test(`round 1 doesn't share within the round; later rounds fill the rest of the quota; 1-9 never shared; 0 is shareable`, async () => {
+test(`round-1 numbers are closed for that gender in later rounds; later rounds share up to 3; 1-9 never shared; 0 shareable`, async () => {
   const users = [
     ...[`a`, `b`].map((u) => ({ u, round: 1, points: u === `a` ? 5 : 1 })),
-    ...[`c`, `d`, `e`].map((u, i) => ({ u, round: 2, points: 4 - i })),
+    { u: `fem`, round: 2, gender: `female` },
+    ...[`c`, `d`, `e`, `f`].map((u, i) => ({ u, round: 2, points: 4 - i })),
     ...[`g`, `h`].map((u, i) => ({ u, round: 2, points: 9 - i })),
     ...[`z1`, `z2`, `z3`].map((u) => ({ u, round: 2 })),
   ];
@@ -362,14 +367,18 @@ test(`round 1 doesn't share within the round; later rounds fill the rest of the 
     ],
   });
   await sleep(1500);
-  // 23 went to one man in round 1, so 2 more men can share it now (3 per gender).
-  for (const u of [`c`, `d`, `e`]) assert.equal((await (await as(u)).bid(23, 34)).status, 200);
+  const c = await as(`c`);
+  assert.ok(!(await c.req(`GET`, `/jersey/eligible`)).data.jerseys.includes(23), `round-1 number offered to the same gender`);
+  assert.equal((await c.bid(23)).status, 400, `could bid for a number won in round 1`);
+  assert.equal((await (await as(`fem`)).bid(23)).status, 200, `round-1 male win shouldn't close 23 for females`);
+  for (const u of [`c`, `d`, `e`, `f`]) await (await as(u)).bid(33, 34);
   await (await as(`g`)).bid(7, 8);
   await (await as(`h`)).bid(7, 8);
   for (const u of [`z1`, `z2`, `z3`]) await (await as(u)).bid(0);
   await closeAndAllocate(admin, 2);
-  assert.deepEqual([await numberOf(`c`), await numberOf(`d`)], [23, 23], `round-1 number not shareable later`);
-  assert.equal(await numberOf(`e`), 34, `23 exceeded 3 per gender`);
+  assert.equal(await numberOf(`fem`), 23);
+  assert.deepEqual([await numberOf(`c`), await numberOf(`d`), await numberOf(`e`)], [33, 33, 33]);
+  assert.equal(await numberOf(`f`), 34, `4th person got a full number`);
   assert.equal(await numberOf(`g`), 7);
   assert.equal(await numberOf(`h`), 8, `1-9 was shared`);
   assert.deepEqual([await numberOf(`z1`), await numberOf(`z2`), await numberOf(`z3`)], [0, 0, 0], `0 should be shareable`);
