@@ -14,12 +14,6 @@ import type { Types } from "mongoose";
 /** Rules: numbers 0-9 are never shared (committee confirmed 0 too); everything else up to 3 per gender. */
 const defaultQuota = (number: number) => (number <= 9 ? 1 : 3);
 
-/**
- * Numbers 0-9 can only be won in round 1 (committee, 2026-10-08): from round 2 on they're closed to
- * everyone, including the post-round-4 auto-assign. Admins can still assign them by hand.
- */
-const isOpenInRound = (number: number, round: number) => number > 9 || round === 1;
-
 /** Allocations made by an admin by hand rather than by a round. */
 const MANUAL_ROUND = 0;
 /** Allocations made by "assign remaining" after the rounds. */
@@ -136,7 +130,7 @@ async function planAllocation(round: number, session: MongoSession): Promise<All
     for (const bidder of bidders) {
       const number = bidder.choices[choice];
       if (done.has(bidder.userId) || number === undefined) continue;
-      if (!isOpenInRound(number, round) || !canTake(bidder, number, quota, banned)) continue;
+      if (!canTake(bidder, number, quota, banned)) continue;
 
       // Round 1 numbers are never shared: the winner closes the number for their gender, in this
       // round and every later round.
@@ -177,9 +171,7 @@ async function planRemaining(upToRound: number, session: MongoSession): Promise<
 
   const results: RemainingPlan[`results`] = [];
   for (const bidder of people) {
-    const options = [...quota.keys()]
-      .sort((a, b) => a - b)
-      .filter((n) => isOpenInRound(n, AUTO_ASSIGN_ROUND) && canTake(bidder, n, quota, banned));
+    const options = [...quota.keys()].sort((a, b) => a - b).filter((n) => canTake(bidder, n, quota, banned));
     if (options.length === 0) {
       impossible.push({ bidder, reason: `No eligible number left for ${bidder.gender}s on their teams` });
       continue;
@@ -366,7 +358,6 @@ async function assignRemaining(upToRound: number, session: MongoSession) {
 
 export {
   AUTO_ASSIGN_ROUND,
-  isOpenInRound,
   AllocationPlan,
   assignRemaining,
   planRemaining,

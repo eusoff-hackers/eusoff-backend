@@ -344,12 +344,13 @@ test(`ranking: choice rank beats points, points beat seniority, seniority beats 
   await assertConsistent();
 });
 
-test(`round-1 numbers are closed for that gender in later rounds; later rounds share up to 3; 0-9 only in round 1`, async () => {
+test(`round-1 numbers are closed for that gender in later rounds; later rounds share up to 3; 0-9 never shared`, async () => {
   const users = [
     ...[`a`, `b`].map((u) => ({ u, round: 1, points: u === `a` ? 5 : 1 })),
     { u: `fem`, round: 2, gender: `female` },
     ...[`c`, `d`, `e`, `f`].map((u, i) => ({ u, round: 2, points: 4 - i })),
     ...[`g`, `h`].map((u, i) => ({ u, round: 2, points: 9 - i })),
+    ...[`z1`, `z2`, `z3`].map((u) => ({ u, round: 2 })),
   ];
   await seed({ users, rounds: [OPEN(1), LATER(2), LATER(3)] });
   const admin = await as(`admin`);
@@ -371,21 +372,19 @@ test(`round-1 numbers are closed for that gender in later rounds; later rounds s
   assert.equal((await c.bid(23)).status, 400, `could bid for a number won in round 1`);
   assert.equal((await (await as(`fem`)).bid(23)).status, 200, `round-1 male win shouldn't close 23 for females`);
   for (const u of [`c`, `d`, `e`, `f`]) await (await as(u)).bid(33, 34);
-  // 0-9 can only be won in round 1: closed to everyone from round 2, even numbers nobody won.
-  const g = await as(`g`);
-  assert.ok(
-    !(await g.req(`GET`, `/jersey/eligible`)).data.jerseys.some((n) => n <= 9),
-    `0-9 offered after round 1`,
-  );
-  assert.equal((await g.bid(7, 60)).status, 400, `could bid for 7 in round 2`);
-  assert.equal((await g.bid(0)).status, 400, `could bid for 0 in round 2`);
-  await g.bid(60);
-  await (await as(`h`)).bid(60);
+  await (await as(`g`)).bid(7, 8);
+  await (await as(`h`)).bid(7, 8);
+  await (await as(`z1`)).bid(0, 50);
+  await (await as(`z2`)).bid(0, 51);
+  await (await as(`z3`)).bid(0, 52);
   await closeAndAllocate(admin, 2);
   assert.equal(await numberOf(`fem`), 23);
   assert.deepEqual([await numberOf(`c`), await numberOf(`d`), await numberOf(`e`)], [33, 33, 33]);
   assert.equal(await numberOf(`f`), 34, `4th person got a full number`);
-  assert.deepEqual([await numberOf(`g`), await numberOf(`h`)], [60, 60]);
+  assert.equal(await numberOf(`g`), 7);
+  assert.equal(await numberOf(`h`), 8, `1-9 was shared`);
+  const zeros = [await numberOf(`z1`), await numberOf(`z2`), await numberOf(`z3`)];
+  assert.equal(zeros.filter((n) => n === 0).length, 1, `0 was shared: ${zeros}`);
   await assertConsistent();
 });
 
@@ -599,10 +598,6 @@ test(`after the last round, everyone left is auto-assigned a valid number; undo 
   const r4 = await waitRound(admin, 4);
   assert.equal(r4.summary?.autoAssigned, 20, JSON.stringify(r4.summary));
   assert.equal((await holders()).length, 20, `not everyone got a number`);
-  assert.ok(
-    (await holders()).every((h) => h.allocatedRound !== 5 || h.number > 9),
-    `auto-assign handed out a 0-9 number`,
-  );
   assert.equal(await numberOf(`nog`), null);
   const again = (await admin.req(`POST`, `/admin/assign-remaining/preview`, {})).data;
   assert.equal(again.results.length, 0, `leftovers remain after auto-assign`);

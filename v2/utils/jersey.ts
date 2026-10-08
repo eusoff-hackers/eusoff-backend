@@ -7,7 +7,6 @@ import { Member } from "@/v2/models/jersey/member";
 import type { iServer } from "@/v2/models/server";
 import { Server } from "@/v2/models/server";
 import type { iUser } from "@/v2/models/user";
-import { isOpenInRound } from "@/v2/utils/jerseyAllocation";
 import { logAndThrow, logger, reportError } from "@/v2/utils/logger";
 import type { MongoSession } from "@/v2/utils/mongoSession";
 
@@ -65,19 +64,13 @@ async function getTeams(user: iUser, session: MongoSession) {
   );
 }
 
-async function currentBidRound(session: MongoSession) {
-  const round = await Server.findOne({ key: `jerseyBidRound` }).session(session.session);
-  return typeof round?.value === `number` ? round.value : 1;
-}
-
 async function isEligibleWithoutUserLegible(user: iUser, jerseys: iJersey[], session: MongoSession) {
   try {
     const { gender } = user;
     if (!gender) return false;
     const teams = await getTeams(user, session);
-    const round = await currentBidRound(session);
 
-    if (jerseys.some((j) => j.quota[gender] <= 0 || !isOpenInRound(j.number, round))) {
+    if (jerseys.some((j) => j.quota[gender] <= 0)) {
       return false;
     }
 
@@ -133,9 +126,8 @@ async function getEligible(user: iUser, session: MongoSession, withUserLegible: 
       .session(session.session)
   ).map((ban) => ban.jersey);
 
-  const round = await currentBidRound(session);
   const eligibleJerseys = (await Jersey.find({ _id: { $nin: banned } }).session(session.session))
-    .filter((j) => j.quota[gender] > 0 && isOpenInRound(j.number, round))
+    .filter((j) => j.quota[gender] > 0)
     .map((jersey) => jersey.number);
 
   return eligibleJerseys;
