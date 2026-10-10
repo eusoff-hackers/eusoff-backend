@@ -58,4 +58,19 @@ class MongoSession {
   }
 }
 
-export { MongoSession };
+/**
+ * Concurrent transactions touching the same documents abort with a write conflict; MongoDB labels
+ * those as safe to retry from the start.
+ */
+function isTransientTxnError(error: unknown) {
+  const e = error as { code?: number; errorLabels?: string[]; hasErrorLabel?: (l: string) => boolean } | null;
+  return Boolean(
+    e &&
+      (e.hasErrorLabel?.(`TransientTransactionError`) ||
+        e.errorLabels?.includes(`TransientTransactionError`) ||
+        e.code === 112 ||
+        e.code === 11000),
+  );
+}
+
+export { MongoSession, isTransientTxnError };

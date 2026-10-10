@@ -15,6 +15,20 @@ interface iJerseyBidInfo extends Document {
   points: number;
   isAllocated: boolean;
   jersey?: Types.ObjectId;
+  allocatedRound?: number;
+  /** Internal: how points were computed (admins only; residents see the facts below instead). */
+  breakdown?: iPointsBreakdown;
+  /** Made a final cut last year, i.e. was a resident last year. */
+  previousResident?: boolean;
+  /** Teams they captain this year. */
+  captainOf?: string[];
+}
+
+interface iPointsBreakdown {
+  finalCut2526: number;
+  firstCut2627: number;
+  captain: number;
+  adjustment: number;
 }
 
 const rJerseyBidInfo = {
@@ -27,6 +41,19 @@ const rJerseyBidInfo = {
     points: { type: `number` },
     isAllocated: { type: `boolean` },
     jersey: { $ref: `jersey` },
+    allocatedRound: { type: `number` },
+    previousResident: { type: `boolean` },
+    captainOf: { type: `array`, items: { type: `string` } },
+    breakdown: {
+      type: `object`,
+      properties: {
+        finalCut2526: { type: `number` },
+        firstCut2627: { type: `number` },
+        captain: { type: `number` },
+        adjustment: { type: `number` },
+      },
+      additionalProperties: false,
+    },
     teams: { type: `array`, items: { $ref: `member` } },
   },
   additionalProperties: false,
@@ -45,6 +72,15 @@ const jerseyBidInfoSchema = new Schema<iJerseyBidInfo>(
     points: { type: Number, required: true },
     isAllocated: { type: Boolean, required: true, default: false },
     jersey: { type: Schema.Types.ObjectId, ref: `Jersey` },
+    allocatedRound: { type: Number },
+    previousResident: { type: Boolean, default: false },
+    captainOf: { type: [String], default: [] },
+    breakdown: {
+      finalCut2526: { type: Number, default: 0 },
+      firstCut2627: { type: Number, default: 0 },
+      captain: { type: Number, default: 0 },
+      adjustment: { type: Number, default: 0 },
+    },
   },
   {
     toObject: { virtuals: true },
@@ -62,4 +98,4 @@ const jerseyBidInfoSchema = new Schema<iJerseyBidInfo>(
 
 const JerseyBidInfo = model<iJerseyBidInfo>(`JerseyBidInfo`, jerseyBidInfoSchema);
 
-export { iJerseyBidInfo, JerseyBidInfo, rJerseyBidInfo };
+export { iJerseyBidInfo, iPointsBreakdown, JerseyBidInfo, rJerseyBidInfo };

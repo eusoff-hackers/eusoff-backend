@@ -3,10 +3,13 @@ import { Schema, model } from "mongoose";
 
 interface iUser extends Document {
   username: string;
+  name?: string;
   password: string;
   role: `USER` | `ADMIN`;
   year: number;
-  gender: `male` | `female`;
+  /** Unset for residents whose gender isn't on record yet; they can't bid until an admin sets it. */
+  gender?: `male` | `female`;
+  lastLogin?: Date;
   email: string;
   room: string;
 }
@@ -16,6 +19,7 @@ const rUser = {
   type: `object`,
   properties: {
     username: { type: `string` },
+    name: { type: `string` },
     role: { type: `string`, enum: [`USER`, `ADMIN`] },
     year: { type: `number`, minimum: 0, maximum: 5 },
     gender: { type: `string`, enum: [`male`, `female`] },
@@ -27,6 +31,7 @@ const rUser = {
 const userSchema = new Schema<iUser>(
   {
     username: { type: String, required: true, unique: true, index: 1 },
+    name: { type: String },
     password: { type: String, required: true },
     role: {
       type: String,
@@ -35,7 +40,8 @@ const userSchema = new Schema<iUser>(
       required: true,
     },
     year: { type: Number, min: 0, max: 5, required: true },
-    gender: { type: String, enum: [`male`, `female`], required: true },
+    gender: { type: String, enum: [`male`, `female`] },
+    lastLogin: { type: Date },
     email: { type: String },
     room: { type: String, required: true },
   },

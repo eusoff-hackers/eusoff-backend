@@ -43,6 +43,7 @@ async function checkUserLegible(user: iUser, session: MongoSession): Promise<boo
     }
 
     if (
+      !user.gender ||
       bidInfo.round > (round.value as number) ||
       bidInfo.isAllocated ||
       bidOpen.value > Date.now() ||
@@ -65,9 +66,11 @@ async function getTeams(user: iUser, session: MongoSession) {
 
 async function isEligibleWithoutUserLegible(user: iUser, jerseys: iJersey[], session: MongoSession) {
   try {
+    const { gender } = user;
+    if (!gender) return false;
     const teams = await getTeams(user, session);
 
-    if (jerseys.some((j) => j.quota[user.gender] === 0)) {
+    if (jerseys.some((j) => j.quota[gender] <= 0)) {
       return false;
     }
 
@@ -108,11 +111,13 @@ async function isEligible(user: iUser, jerseys: iJersey[], session: MongoSession
   }
 }
 
-async function getEligible(user: iUser, session: MongoSession): Promise<number[]> {
-  if ((await checkUserLegible(user, session)) === false) {
+async function getEligible(user: iUser, session: MongoSession, withUserLegible: boolean = true): Promise<number[]> {
+  if (withUserLegible && (await checkUserLegible(user, session)) === false) {
     return [];
   }
 
+  const { gender } = user;
+  if (!gender) return [];
   const teams = await getTeams(user, session);
 
   const banned = (
@@ -122,7 +127,7 @@ async function getEligible(user: iUser, session: MongoSession): Promise<number[]
   ).map((ban) => ban.jersey);
 
   const eligibleJerseys = (await Jersey.find({ _id: { $nin: banned } }).session(session.session))
-    .filter((j) => j.quota[user.gender] !== 0)
+    .filter((j) => j.quota[gender] > 0)
     .map((jersey) => jersey.number);
 
   return eligibleJerseys;

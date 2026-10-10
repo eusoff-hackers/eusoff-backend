@@ -1,5 +1,6 @@
 import { addSchemas } from "@/v2/models/fastify-schemas";
 import { addSession } from "@/v2/plugins/addSession";
+import admin from "@/v2/routes/admin";
 import cca from "@/v2/routes/cca";
 import hall from "@/v2/routes/hall";
 import ihg from "@/v2/routes/ihg";
@@ -24,4 +25,5 @@ export default async (fastify: FastifyInstance) => {
   fastify.register(hall, { prefix: `/hall` });
   fastify.register(ihg, { prefix: `/ihg` });
   fastify.register(room, { prefix: `/room` });
+  fastify.register(admin, { prefix: `/admin` });
 };
